@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRO Monitoring System - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+    <div id="root"></div>
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="text/babel">
+        // LoginPage Component
+        function LoginPage({ darkMode }) {
+            const [username, setUsername] = React.useState('');
+            const [password, setPassword] = React.useState('');
+            const [error, setError] = React.useState('');
+
+            const handleTraditionalLogin = (e) => {
+                e.preventDefault();
+                setError('');
+                // Hardcoded credentials for demo: username 'admin', password 'admin'
+                if (username === 'admin' && password === 'admin') {
+                    // Store login status and username in localStorage
+                    localStorage.setItem('loggedInUser', username);
+                    localStorage.setItem('darkModePreference', JSON.stringify(darkMode)); // Save current dark mode preference
+
+                    // Redirect to dashboard.html
+                    window.location.href = 'dashboard.html';
+                } else {
+                    setError('Invalid username or password. (Demo credentials: admin / admin)');
+                }
+            };
+
+            return (
+                <div className={`login-container ${darkMode ? 'dark-mode' : ''}`}>
+                    <h1 className="welcome-back">IRO MONITORING SYSTEM</h1>
+                    <p className="login-description">
+                        Breaking Boundaries, Building Milestones.
+                    </p>
+
+                    <form onSubmit={handleTraditionalLogin} className="login-form">
+                        <div className="input-group">
+                            <label className="input-label" htmlFor="username">Username</label>
+                            <input
+                                className="styled-input"
+                                id="username"
+                                type="text"
+                                placeholder="admin"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                required
+                            />
+                            {username === 'admin' && (
+                                <span className="input-icon-right">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="currentColor"/>
+                                    </svg>
+                                </span>
+                            )}
+                        </div>
+                        <div className="input-group">
+                            <label className="input-label" htmlFor="password">Password</label>
+                            <input
+                                className="styled-input"
+                                id="password"
+                                type="password"
+                                placeholder="************"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className="options-group">
+                            <label className="remember-me">
+                                <input type="checkbox" />
+                                Remember Me
+                            </label>
+                            <a href="#" className="forget-password-link" onClick={() => alert('Forget password clicked! (UI Demo)')}>
+                                Forget Password?
+                            </a>
+                        </div>
+                        {error && <p className="text-red-600 text-xs italic mb-4 text-center">{error}</p>}
+
+                        <div className="flex justify-center items-center mt-6">
+                            <button
+                                className="sign-in-button"
+                                type="submit"
+                            >
+                                Login Now
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            );
+        }
+
+        // Root App Component for login page
+        function App() {
+            // Initialize dark mode from localStorage or default to false
+            const [darkMode, setDarkMode] = React.useState(() => {
+                try {
+                    const savedMode = localStorage.getItem('darkModePreference');
+                    return savedMode ? JSON.parse(savedMode) : false;
+                } catch (e) {
+                    console.error("Failed to parse dark mode preference from localStorage:", e);
+                    return false;
+                }
+            });
+
+            const toggleDarkMode = () => {
+                setDarkMode(prevMode => {
+                    const newMode = !prevMode;
+                    localStorage.setItem('darkModePreference', JSON.stringify(newMode)); // Save updated preference
+                    document.body.classList.toggle('dark-mode', newMode); // Apply to body
+                    return newMode;
+                });
+            };
+
+            // Apply dark mode to body initially
+            React.useEffect(() => {
+                document.body.classList.toggle('dark-mode', darkMode);
+            }, [darkMode]);
+
+            return (
+                <React.Fragment>
+                    {/* Dark mode toggle button */}
+                    <button
+                        className="dark-mode-toggle"
+                        onClick={toggleDarkMode}
+                        title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                    >
+                        <i className={darkMode ? "fas fa-sun" : "fas fa-moon"}></i>
+                    </button>
+
+                    {/* This div controls the background for the entire app area */}
+                    <div className={`w-screen h-screen flex justify-center items-center overflow-hidden login-background`}>
+                        <LoginPage darkMode={darkMode} />
+                    </div>
+                </React.Fragment>
+            );
+        }
+
+        // Render the Root App component into the 'root' div
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>

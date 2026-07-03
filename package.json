@@ -1,0 +1,46 @@
+{
+  "name": "iro-monitoring-system",
+  "version": "1.0.0",
+  "description": "IRO Monitoring System Electron App",
+  "main": "main.js",
+"scripts": {
+  "start": "electron .",
+  "dist": "electron-builder"
+},
+  "keywords": [],
+  "author": "Your Name",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^29.3.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.yourcompany.iromonitoring",
+    "productName": "IRO Monitoring System",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "login.html",
+      "logbook.html",
+      "login.css",
+      "logbook.css",
+      "dashboard.css",
+      "dashboard.html",
+      "iro.jpg"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "build/icon.icns"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "build/icon.png"
+    }
+  }
+}

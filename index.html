@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading IR Document System...</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            /* Reverted to the previous lighter linear gradient background */
+            background: linear-gradient(to bottom right, #e8f7ff, #bae7ff, #ffffff, #fff1e6, #ffcca6);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            color: #000000; /* Black text */
+            text-align: center;
+        }
+
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+        }
+
+        .system-logo {
+            width: 150px;
+            height: auto;
+            margin-bottom: 2rem;
+            animation: bounce 1s infinite alternate;
+            filter: drop-shadow(0 10px 5px rgba(0, 0, 0, 0.2));
+            transition: filter 0.2s ease-out;
+        }
+
+        @keyframes bounce {
+            0% {
+                transform: translateY(0);
+                filter: drop-shadow(0 10px 5px rgba(0, 0, 0, 0.2));
+            }
+            50% {
+                transform: translateY(-15px);
+                filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.1));
+            }
+            100% {
+                transform: translateY(0);
+                filter: drop-shadow(0 10px 5px rgba(0, 0, 0, 0.2));
+            }
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #000000;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 9999px;
+            height: 0.75rem;
+            overflow: hidden;
+            margin-bottom: 0.75rem;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background-color: #fe6d04;
+            border-radius: 9999px;
+            transition: width 0.3s ease-out;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .loading-message-text {
+            font-size: 1rem;
+            color: #555555;
+            margin-bottom: 1rem;
+            min-height: 1.2rem;
+        }
+
+        .quote-display {
+            font-size: 1.2rem;
+            font-style: normal; /* Ensures the entire block is not italic */
+            margin-top: 1.5rem;
+            min-height: 3rem;
+            color: #333333;
+            text-align: center;
+            padding: 0 1.5rem;
+            max-width: 700px;
+        }
+
+        /* Specific styles for elements within quote-display */
+        .quote-display em {
+            font-style: italic; /* Makes the quote text italic */
+        }
+        .quote-display strong {
+            font-weight: bold; /* Makes the source name bold */
+            font-style: normal; /* Ensures the source name is not italic */
+        }
+
+        .reminder {
+            background-color: #83d3ff;
+            color: #003366;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+            display: none;
+            border: 1px solid #66b2ff;
+            max-width: 500px;
+            width: 90%;
+            opacity: 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .reminder i {
+            font-size: 1.1rem;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .continue-button {
+            background-color: #000080;
+            color: white;
+            padding: 1rem 2.5rem;
+            border-radius: 9999px;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-top: 3rem;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            display: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .continue-button:hover {
+            background-color: #000066;
+            transform: translateY(-2px);
+        }
+        .continue-button:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-container">
+        <img src="index.png" alt="IR Document System Logo" class="system-logo">
+
+        <h1>IRO MONITORING SYSTEM</h1>
+        
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="progressBarFill">
+                <span id="progressText">0%</span>
+            </div>
+        </div>
+
+        <p id="loadingMessage" class="loading-message-text">Initializing core modules...</p>
+        
+        <div id="xamppReminder" class="reminder">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            Remember to start Apache and MySQL in your XAMPP Control Panel!
+        </div>
+
+        <div id="quoteDisplay" class="quote-display">
+            </div>
+
+        <button id="continueButton" class="continue-button">Go to Login</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const progressBarFill = document.getElementById('progressBarFill');
+            const progressText = document.getElementById('progressText');
+            const xamppReminder = document.getElementById('xamppReminder');
+            const quoteDisplay = document.getElementById('quoteDisplay');
+            const loadingMessage = document.getElementById('loadingMessage');
+            const continueButton = document.getElementById('continueButton');
+            let progress = 0;
+            let phpServerPort = 8000; // Default PHP server port from config.js
+            let reminderShown = false;
+            let loadingComplete = false;
+
+            console.log("DOM Content Loaded. Initializing loading screen.");
+
+            const quotes = [
+                { text: "Knowledge is power.", source: "Francis Bacon" },
+                { text: "The greatest wealth is health.", source: "Virgil" },
+                { text: "The only way to do great work is to love what you do.", source: "Steve Jobs" },
+                { text: "Information is the oil of the 21st century, and analytics is the combustion engine.", source: "Peter Sondergaard" },
+                { text: "The beginning of knowledge is the discovery of something we do not understand.", source: "Frank Herbert" },
+                { text: "The mind is not a vessel to be filled, but a fire to be kindled.", source: "Plutarch" }
+            ];
+
+            function displayRandomLocalQuote() {
+                const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+                // Use innerHTML to apply specific styling to parts of the text
+                quoteDisplay.innerHTML = `"<em>${randomQuote.text}</em>" - <strong>${randomQuote.source}</strong>`;
+            }
+
+            async function fetchRandomQuoteFromBackend() {
+                try {
+                    const response = await fetch(`http://127.0.0.1:${phpServerPort}/api.php?action=getRandomQuote`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.success && data.quote) {
+                            // Attempt to parse "Quote text - Source" format from backend
+                            const parts = data.quote.split(' - ');
+                            const quoteText = parts[0];
+                            // If there's a source part, use it; otherwise, default to 'Unknown'
+                            const quoteSource = parts.length > 1 ? parts.slice(1).join(' - ') : 'Unknown'; 
+                            quoteDisplay.innerHTML = `"<em>${quoteText}</em>" - <strong>${quoteSource}</strong>`;
+
+                        } else {
+                            console.warn("Failed to get random quote from backend, falling back to local:", data.message || "Unknown error");
+                            displayRandomLocalQuote(); // Fallback to local if backend fails
+                        }
+                    } else {
+                        console.error("Error fetching random quote from backend:", response.status, response.statusText);
+                        displayRandomLocalQuote(); // Fallback to local on network error
+                    }
+                } catch (error) {
+                    console.error("Network error fetching random quote from backend, falling back to local:", error);
+                    displayRandomLocalQuote(); // Fallback to local on network error
+                }
+            }
+
+            // Call this initially to display a quote
+            fetchRandomQuoteFromBackend(); 
+            // Set interval to update quote periodically
+            const quoteInterval = setInterval(fetchRandomQuoteFromBackend, 5000);
+
+            const progressInterval = setInterval(() => {
+                if (loadingComplete) {
+                    clearInterval(progressInterval);
+                    return;
+                }
+
+                progress += 1;
+                progressBarFill.style.width = `${progress}%`;
+                progressText.textContent = `${progress}%`;
+
+                if (progress === 25 && !reminderShown) {
+                    xamppReminder.style.display = 'block';
+                    xamppReminder.classList.add('fade-in');
+                    loadingMessage.textContent = "Please ensure XAMPP services are running...";
+                    reminderShown = true;
+                }
+
+                if (progress === 10) {
+                    loadingMessage.textContent = "Initializing core modules...";
+                } else if (progress === 30 && !reminderShown) {
+                    loadingMessage.textContent = "Connecting to database...";
+                } else if (progress === 50 && !reminderShown) {
+                    loadingMessage.textContent = "Retrieving necessary files...";
+                } else if (progress === 70 && !reminderShown) {
+                    loadingMessage.textContent = "Optimizing resources...";
+                } else if (progress === 90 && !reminderShown) {
+                    loadingMessage.textContent = "Finalizing setup...";
+                }
+
+                if (progress >= 100) {
+                    progress = 100;
+                    progressBarFill.style.width = '100%';
+                    progressText.textContent = '100%';
+                    loadingComplete = true;
+                    clearInterval(progressInterval);
+
+                    loadingMessage.textContent = "System ready. Click Go to Login to proceed.";
+                    setTimeout(() => {
+                        continueButton.style.display = 'block';
+                        continueButton.classList.add('fade-in');
+                    }, 1000);
+                }
+            }, 40);
+
+            continueButton.addEventListener('click', () => {
+                clearInterval(quoteInterval);
+                window.location.href = 'login.html';
+            });
+        });
+    </script>
+</body>
+</html>

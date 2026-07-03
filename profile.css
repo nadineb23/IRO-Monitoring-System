@@ -1,0 +1,8 @@
+/* Custom CSS for the Profile Dropdown (profile.css) */
+/* Add any specific styles for the profile dropdown here if needed */
+
+.profile-dropdown-menu {
+    /* Example: Add a subtle border or specific shadow if needed */
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    /* You can override or add specific styles that are not covered by Tailwind directly */
+}

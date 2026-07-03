@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRO Monitoring System - Logbooks</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="logbook.css">
+    <link rel="stylesheet" href="profile.css">
+</head>
+<body>
+    <div id="root"></div>
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+
+    <script type="text/babel">
+        // =====================================================================
+        // COMMON COMPONENTS
+        // These components are generic and can be used across different sections.
+        // They are duplicated here for a self-contained file structure per page.
+        // =====================================================================
+
+        // SearchBar Component
+        function SearchBar({ darkMode }) {
+            return (
+                <div className="flex-grow flex items-center">
+                    <input
+                        type="text"
+                        placeholder="Search documents..."
+                        className={`
+                            w-full max-w-lg p-3 pl-4 rounded-full shadow-md ml-96
+                            ${darkMode
+                                ? 'bg-gray-800 text-gray-200 border border-gray-600 focus:border-blue-500 focus:ring-blue-500'
+                                : 'bg-white text-gray-700 border border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                            }
+                            focus:outline-none focus:ring-1
+                        `}
+                    />
+                    <i className="fas fa-search -ml-8 text-gray-400"></i>
+                </div>
+            );
+        }
+
+        // ManageProfileModal Component (remains for "Manage Profile" action)
+        function ManageProfileModal({ show, onClose, darkMode }) {
+            const [activeTab, setActiveTab] = React.useState('updateProfile');
+
+            if (!show) {
+                return null;
+            }
+
+            return (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+                    <div className={`rounded-lg shadow-xl w-11/12 md:w-2/3 lg:w-1/2 p-6 relative ${darkMode ? 'bg-gray-800 text-gray-200' : 'bg-white text-gray-800'}`}>
+                        <button
+                            onClick={onClose}
+                            className={`absolute top-3 right-3 text-2xl font-bold ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-700 hover:text-gray-900'}`}
+                        >
+                            &times;
+                        </button>
+                        <h3 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Manage Profile</h3>
+
+                        <div className="flex border-b border-gray-200 dark:border-gray-600 mb-4">
+                            <button
+                                className={`flex-1 py-2 px-4 text-center font-medium ${activeTab === 'updateProfile' ? (darkMode ? 'text-blue-400 border-b-2 border-blue-400' : 'text-blue-600 border-b-2 border-blue-600') : (darkMode ? 'text-gray-400 hover:text-blue-300' : 'text-gray-500 hover:text-blue-500')}`}
+                                onClick={() => setActiveTab('updateProfile')}
+                            >
+                                Update Profile
+                            </button>
+                            <button
+                                className={`flex-1 py-2 px-4 text-center font-medium ${activeTab === 'updatePassword' ? (darkMode ? 'text-blue-400 border-b-2 border-blue-400' : 'text-blue-600 border-b-2 border-blue-600') : (darkMode ? 'text-gray-400 hover:text-blue-300' : 'text-gray-500 hover:text-blue-500')}`}
+                                onClick={() => setActiveTab('updatePassword')}
+                            >
+                                Update Password
+                            </button>
+                        </div>
+
+                        {activeTab === 'updateProfile' && (
+                            <div>
+                                <div className="mb-4">
+                                    <label htmlFor="name" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Name</label>
+                                    <input
+                                        type="text"
+                                        id="name"
+                                        className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`}
+                                        defaultValue="Juan Dela Cruz"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label htmlFor="email" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Email</label>
+                                    <input
+                                        type="email"
+                                        id="email"
+                                        className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`}
+                                        defaultValue="juan.delacruz@example.com"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label htmlFor="role" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Role</label>
+                                    <input
+                                        type="text"
+                                        id="role"
+                                        className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`}
+                                        defaultValue="Administrator"
+                                        readOnly
+                                    />
+                                </div>
+                                <button className={`px-4 py-2 rounded-md font-semibold ${darkMode ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}>Save Profile</button>
+                            </div>
+                        )}
+
+                        {activeTab === 'updatePassword' && (
+                            <div>
+                                <div className="mb-4">
+                                    <label htmlFor="current-password" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Current Password</label>
+                                    <input
+                                        type="password"
+                                        id="current-password"
+                                        className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`}
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label htmlFor="new-password" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>New Password</label>
+                                    <input
+                                        type="password"
+                                        id="new-password"
+                                        className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`}
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label htmlFor="confirm-password" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Confirm New Password</label>
+                                    <input
+                                        type="password"
+                                        id="confirm-password"
+                                        className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`}
+                                    />
+                                </div>
+                                <button className={`px-4 py-2 rounded-md font-semibold ${darkMode ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}>Change Password</button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // New AddNewFolderModal Component
+        function AddNewFolderModal({ show, onClose, darkMode, onAddFolder }) {
+            const [year, setYear] = React.useState('');
+
+            const handleSubmit = () => {
+                if (year) {
+                    onAddFolder(year);
+                    setYear('');
+                    onClose();
+                } else {
+                    alert('Please enter a year.');
+                }
+            };
+
+            if (!show) {
+                return null;
+            }
+
+            return (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+                    <div className={`rounded-lg shadow-xl w-11/12 md:w-1/3 lg:w-1/4 p-6 relative ${darkMode ? 'bg-gray-800 text-gray-200' : 'bg-white text-gray-800'}`}>
+                        <button
+                            onClick={onClose}
+                            className={`absolute top-3 right-3 text-2xl font-bold ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-700 hover:text-gray-900'}`}
+                        >
+                            &times;
+                        </button>
+                        <h3 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Add New Folder</h3>
+
+                        <div className="mb-4">
+                            <label htmlFor="new-folder-year" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Year</label>
+                            <input
+                                type="number"
+                                id="new-folder-year"
+                                className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`}
+                                placeholder="e.g., 2025"
+                                value={year}
+                                onChange={(e) => setYear(e.target.value)}
+                                min="1900" // Example min year
+                                max={new Date().getFullYear() + 10} // Example max year
+                            />
+                        </div>
+                        <div className="flex justify-end space-x-2">
+                            <button
+                                onClick={onClose}
+                                className={`px-4 py-2 rounded-md font-semibold ${darkMode ? 'bg-gray-600 hover:bg-gray-500 text-white' : 'bg-gray-300 hover:bg-gray-400 text-gray-800'}`}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSubmit}
+                                className={`px-4 py-2 rounded-md font-semibold ${darkMode ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
+                            >
+                                Add Folder
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // =====================================================================
+        // LOGBOOK COMPONENTS
+        // All components related to the Logbooks section.
+        // These are now exclusively in logbook.html.
+        // =====================================================================
+
+        // Logbook Overview Cards Component
+        function LogbookOverviewCards({ darkMode, onSelectLogbookType }) {
+            const cardData = [
+                { type: 'incomingDocuments', title: 'Incoming Documents', icon: 'fas fa-file-import', description: 'View and manage all incoming documents.' },
+                { type: 'outgoingDocuments', title: 'Outgoing Documents', icon: 'fas fa-file-export', description: 'Track and organize all outgoing documents.' },
+                { type: 'foreignTravelsPersonnels', title: 'Foreign Travels - Personnels', icon: 'fas fa-user-tie', description: 'Records of personnel foreign travels.' },
+                { type: 'foreignTravelsStudents', title: 'Foreign Travels - Students', icon: 'fas fa-user-graduate', description: 'Records of student foreign travels.' },
+                { type: 'travelOrdersRequests', title: 'Travel Orders / Requests', icon: 'fas fa-sticky-note', description: 'Manage travel orders and requests.' },
+                { type: 'iroMemos', title: 'IRO Memos', icon: 'fas fa-file-alt', description: 'Internal memos and communications.' },
+                { type: 'addItem', title: 'Add New Item', icon: 'fas fa-plus-circle', description: 'Quickly add new documents or entries.' },
+            ];
+
+            return (
+                <div className="p-6">
+                    <h2 className={`text-3xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Logbooks Overview</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {cardData.map(card => (
+                            <div
+                                key={card.type}
+                                className={`
+                                    p-6 rounded-lg shadow-md cursor-pointer transition-transform transform hover:scale-105
+                                    ${darkMode ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-white text-gray-800 hover:bg-gray-100'}
+                                `}
+                                onClick={() => onSelectLogbookType(card.type)}
+                            >
+                                <i className={`${card.icon} text-5xl mb-4 text-[#ff7518]`}></i> 
+                                <h3 className="text-xl font-semibold mb-2">{card.title}</h3>
+                                <p className="text-sm">{card.description}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        // Base Folder View Component for reusability within Logbooks
+        function BaseFolderView({ title, darkMode, onYearSelect, onBack }) {
+            // Generate years from the current year back to 2017 (inclusive), resulting in newest to oldest.
+            const currentYear = new Date().getFullYear();
+            const earliestYear = 2017; // The earliest year you want to display
+            const [years, setYears] = React.useState(() => {
+                const initialYears = [];
+                for (let year = currentYear; year >= earliestYear; year--) {
+                    initialYears.push(String(year));
+                }
+                return initialYears;
+            });
+            
+            const [showAddNewFolderModal, setShowAddNewFolderModal] = React.useState(false);
+
+            const handleAddNewFolder = (newYear) => {
+                // In a real application, you'd send this newYear to your backend
+                // and then fetch the updated list of years.
+                // For this example, we'll just add it to the state if it's unique.
+                if (!years.includes(newYear)) {
+                    setYears(prevYears => {
+                        const updatedYears = [...prevYears, newYear].sort((a, b) => b - a); // Sort newest to oldest
+                        return updatedYears;
+                    });
+                    console.log(`New folder for year ${newYear} added (frontend only).`);
+                    // Here you would typically make an API call to create the folder on the server
+                    // e.g., fetch('/api/create-folder', { method: 'POST', body: JSON.stringify({ year: newYear, type: title }) });
+                } else {
+                    alert(`Folder for year ${newYear} already exists.`);
+                }
+            };
+
+            return (
+                <div className="p-6">
+                    <button
+                        onClick={onBack}
+                        className={`mb-4 px-4 py-2 rounded-md font-semibold transition-colors duration-200 ${
+                            darkMode ? 'bg-gray-600 hover:bg-gray-500 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'
+                        }`}
+                    >
+                        <i className="fas fa-arrow-left mr-2"></i> Back to Logbooks Overview
+                    </button>
+                    <h2 className={`text-5xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{title}</h2>
+                    <p className={`text-xl mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Select a year to view documents:</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                        {years.map(year => (
+                            <div
+                                key={year}
+                                className={`
+                                    flex flex-col items-center justify-center p-4 rounded-lg shadow-md cursor-pointer transition-transform transform hover:scale-105
+                                    ${darkMode ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-white text-gray-800 hover:bg-gray-100'}
+                                `}
+                                onClick={() => onYearSelect(year)}
+                            >
+                                <i className="fas fa-folder text-5xl mb-3 folder-icon-color"></i>
+                                <span className="font-semibold text-lg"> {year}</span>
+                            </div>
+                        ))}
+                         {/* "Add New Folder" button */}
+                        <div
+                            className={`
+                                flex flex-col items-center justify-center p-4 rounded-lg shadow-md cursor-pointer transition-transform transform hover:scale-105
+                                ${darkMode ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-white text-gray-800 hover:bg-gray-100'}
+                            `}
+                            onClick={() => setShowAddNewFolderModal(true)}
+                        >
+                            <i className={`fas fa-plus-circle text-5xl mb-3 text-[#ff7518]`}></i>
+                            <span className="font-semibold text-lg">Add New Folder</span>
+                        </div>
+                    </div>
+                    <AddNewFolderModal
+                        show={showAddNewFolderModal}
+                        onClose={() => setShowAddNewFolderModal(false)}
+                        darkMode={darkMode}
+                        onAddFolder={handleAddNewFolder}
+                    />
+                </div>
+            );
+        }
+
+        // IncomingDocumentsView Component
+        function IncomingDocumentsView({ darkMode, onYearSelect, onBack }) {
+            return (
+                <BaseFolderView 
+                    title="Incoming Documents" 
+                    darkMode={darkMode} 
+                    onYearSelect={onYearSelect}
+                    onBack={onBack}
+                />
+            );
+        }
+
+        // OutgoingDocumentsView Component
+        function OutgoingDocumentsView({ darkMode, onYearSelect, onBack }) {
+            return (
+                <BaseFolderView 
+                    title="Outgoing Documents" 
+                    darkMode={darkMode} 
+                    onYearSelect={onYearSelect}
+                    onBack={onBack}
+                />
+            );
+        }
+
+        // ForeignTravelsPersonnelsView Component
+        function ForeignTravelsPersonnelsView({ darkMode, onYearSelect, onBack }) {
+            return (
+                <BaseFolderView 
+                    title="Foreign Travels - Personnels" 
+                    darkMode={darkMode} 
+                    onYearSelect={onYearSelect}
+                    onBack={onBack}
+                />
+            );
+        }
+
+        // ForeignTravelsStudentsView Component
+        function ForeignTravelsStudentsView({ darkMode, onYearSelect, onBack }) {
+            return (
+                <BaseFolderView 
+                    title="Foreign Travels - Students" 
+                    darkMode={darkMode} 
+                    onYearSelect={onYearSelect}
+                    onBack={onBack}
+                />
+            );
+        }
+
+        // TravelOrdersRequestsView Component
+        function TravelOrdersRequestsView({ darkMode, onYearSelect, onBack }) {
+            return (
+                <BaseFolderView 
+                    title="Travel Orders / Requests" 
+                    darkMode={darkMode} 
+                    onYearSelect={onYearSelect}
+                    onBack={onBack}
+                />
+            );
+        }
+        
+        // IRO Memos Component (static content for now)
+        function IROMemoView({ darkMode }) {
+            return (
+                <div className={`p-6 rounded-lg shadow-md ${darkMode ? 'bg-gray-700 text-gray-200' : 'bg-white text-gray-700'}`}>
+                    <h2 className="text-3xl font-bold mb-4">IRO Memos</h2>
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600 rounded-lg overflow-hidden">
+                            <thead className={`${darkMode ? 'bg-gray-600' : 'bg-gray-50'}`}>
+                                <tr>
+                                    <th scope="col" className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-200' : 'text-gray-500'}`}>
+                                        Memo Title
+                                    </th>
+                                    <th scope="col" className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-200' : 'text-gray-500'}`}>
+                                        Date Issued
+                                    </th>
+                                    <th scope="col" className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-200' : 'text-gray-500'}`}>
+                                        Category
+                                    </th>
+                                    <th scope="col" className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-200' : 'text-gray-500'}`}>
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody className={`divide-y divide-gray-200 ${darkMode ? 'bg-gray-700 text-gray-200 divide-gray-600' : 'bg-white text-gray-900'}`}>
+                                <tr>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">Meeting with Partner Universities</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm">2024-06-10</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm">Partnerships</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <a href="#" className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-2">View</a>
+                                        <a href="#" className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">Delete</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">Student Exchange Program Guidelines</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm">2024-05-28</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm">Students</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <a href="#" className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-2">View</a>
+                                        <a href="#" className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">Delete</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">Upcoming International Conferences</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm">2024-06-01</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <a href="#" className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-2">View</a>
+                                        <a href="#" className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">Delete</a>
+                                    </td>
+                                </tr>
+                                {/* Add more memo rows as needed */}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        }
+
+        // Add Item Component (static content for now)
+        function AddItemView({ darkMode }) {
+            return (
+                <div className={`p-6 rounded-lg shadow-md ${darkMode ? 'bg-gray-700 text-gray-200' : 'bg-white text-gray-700'}`}>
+                    <h2 className="text-3xl font-bold mb-4">Add New Item Content</h2>
+                    <p>Here you can add forms or interfaces for adding new documents or records.</p>
+                </div>
+            );
+        }
+
+        // DocumentContent Component (to display the content of selected year's HTML)
+        function DocumentContent({ type, year, darkMode, onBack }) {
+            const [content, setContent] = React.useState("Loading document content...");
+            let fileNamePrefix = '';
+            let titlePrefix = '';
+
+            switch (type) {
+                case 'incomingDocuments':
+                    fileNamePrefix = 'id';
+                    titlePrefix = 'Incoming Documents';
+                    break;
+                case 'outgoingDocuments':
+                    fileNamePrefix = 'od';
+                    titlePrefix = 'Outgoing Documents';
+                    break;
+                case 'foreignTravelsPersonnels':
+                    fileNamePrefix = 'ftp';
+                    titlePrefix = 'Foreign Travels - Personnels';
+                    break;
+                case 'foreignTravelsStudents':
+                    fileNamePrefix = 'fts';
+                    titlePrefix = 'Foreign Travels - Students';
+                    break;
+                case 'travelOrdersRequests':
+                    fileNamePrefix = 'tor';
+                    titlePrefix = 'Travel Orders / Requests';
+                    break;
+                default:
+                    fileNamePrefix = 'unknown';
+                    titlePrefix = 'Unknown Document Type';
+            }
+
+            const fileName = `${fileNamePrefix}${year}.html`; // This assumes year-specific HTML files for all types
+
+            React.useEffect(() => {
+                fetch(fileName)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.text();
+                    })
+                    .then(htmlContent => {
+                        setContent(htmlContent);
+                    })
+                    .catch(error => {
+                        console.error(`Error fetching ${fileName}:`, error);
+                        setContent(`Failed to load content for ${titlePrefix} of ${year}. Please ensure the file exists and is accessible. Error: ${error.message}`);
+                    });
+            }, [type, year]);
+
+            return (
+                <div className="p-6">
+                    <button
+                        onClick={onBack}
+                        className={`mb-4 px-4 py-2 rounded-md font-semibold transition-colors duration-200 ${
+                            darkMode ? 'bg-gray-600 hover:bg-gray-500 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'
+                        }`}
+                    >
+                        <i className="fas fa-arrow-left mr-2"></i> Back to Years
+                    </button>
+                    <h2 className={`text-3xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{titlePrefix} - {year}</h2>
+                    <div
+                        className={`p-6 rounded-lg shadow-md overflow-auto h-full ${darkMode ? 'bg-gray-700 text-gray-200' : 'bg-white text-gray-700'}`}
+                        style={{ maxHeight: 'calc(100vh - 200px)' }}
+                        dangerouslySetInnerHTML={{ __html: content }}
+                    >
+                    </div>
+                </div>
+            );
+        }
+
+        // =====================================================================
+        // LOGBOOK PAGE COMPONENT (Primary component for logbook.html)
+        // This component defines the layout and navigation for the logbook pages.
+        // =====================================================================
+
+        function LogbookPage({ onSignOut, darkMode, username, toggleDarkMode }) {
+            const [isProfileDropdownOpen, setIsProfileDropdownOpen] = React.useState(false);
+            const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
+            
+            // State to control which main content section is active within THIS PAGE: a logbookType (or null for Logbook Overview)
+            const [activeMenuItem, setActiveMenuItem] = React.useState(null); // Default to Logbook Overview on load
+            
+            // State to control the expansion of the Logbooks sub-menu (always expanded in logbook.html)
+            const [isLogbooksExpanded, setIsLogbooksExpanded] = React.useState(true); // Always expanded for LogbookPage
+
+            // States for selected years within specific document types
+            const [selectedIncomingDocumentYear, setSelectedIncomingDocumentYear] = React.useState(null);
+            const [selectedOutgoingDocumentYear, setSelectedOutgoingDocumentYear] = React.useState(null);
+            const [selectedFTPYear, setSelectedFTPYear] = React.useState(null);
+            const [selectedFTSYear, setSelectedFTSYear] = React.useState(null);
+            const [selectedTORYear, setSelectedTORYear] = React.useState(null);
+            
+            const [showManageProfileModal, setShowManageProfileModal] = React.useState(false);
+
+            const dropdownRef = React.useRef(null);
+
+            const toggleProfileDropdown = () => {
+                setIsProfileDropdownOpen(prev => !prev);
+            };
+
+            const toggleSidebar = () => {
+                setIsSidebarCollapsed(prev => !prev);
+            };
+
+            const handleMenuItemClick = (menuItem) => {
+                setActiveMenuItem(menuItem);
+                // Reset specific year selection for all logbook types
+                setSelectedIncomingDocumentYear(null);
+                setSelectedOutgoingDocumentYear(null);
+                setSelectedFTPYear(null);
+                setSelectedFTSYear(null);
+                setSelectedTORYear(null);
+            };
+            
+            const handleManageProfileClick = (e) => {
+                e.preventDefault();
+                setIsProfileDropdownOpen(false);
+                setShowManageProfileModal(true);
+            };
+
+            const handleCloseManageProfileModal = () => {
+                setShowManageProfileModal(false);
+            };
+
+            // Year selection handlers
+            const handleYearSelect = (type, year) => {
+                switch(type) {
+                    case 'incomingDocuments':
+                        setSelectedIncomingDocumentYear(year);
+                        break;
+                    case 'outgoingDocuments':
+                        setSelectedOutgoingDocumentYear(year);
+                        break;
+                    case 'foreignTravelsPersonnels':
+                        setSelectedFTPYear(year);
+                        break;
+                    case 'foreignTravelsStudents':
+                        setSelectedFTSYear(year);
+                        break;
+                    case 'travelOrdersRequests':
+                        setSelectedTORYear(year);
+                        break;
+                    default:
+                        break;
+                }
+            };
+
+            // Function to go back from year view to the sub-item's main folder view
+            const handleBackToFolderView = (type) => {
+                switch(type) {
+                    case 'incomingDocuments':
+                        setSelectedIncomingDocumentYear(null);
+                        break;
+                    case 'outgoingDocuments':
+                        setSelectedOutgoingDocumentYear(null);
+                        break;
+                    case 'foreignTravelsPersonnels':
+                        setSelectedFTPYear(null);
+                        break;
+                    case 'foreignTravelsStudents':
+                        setSelectedFTSYear(null);
+                        break;
+                    case 'travelOrdersRequests':
+                        setSelectedTORYear(null);
+                        break;
+                    default:
+                        break;
+                }
+            };
+
+            // Effect to close the dropdown when clicking outside it
+            React.useEffect(() => {
+                function handleClickOutside(event) {
+                    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                        setIsProfileDropdownOpen(false);
+                    }
+                }
+                document.addEventListener("mousedown", handleClickOutside);
+                return () => {
+                    document.removeEventListener("mousedown", handleClickOutside);
+                };
+            }, []);
+
+
+            return (
+                <div className={`flex flex-col h-full w-full ${darkMode ? 'dark-mode-dashboard' : 'light-mode-dashboard'}`}>
+                    {/* Main Content Area */}
+                    <div className="flex flex-1 overflow-hidden">
+                        {/* Sidebar - Positioned on the left, with dynamic width */}
+                        <aside className={`p-4 shadow-lg bg-[#140ca2] text-white transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'w-16' : 'w-64'}`}>
+                            {/* Sidebar Header with Toggle Button */}
+                            <div className="flex items-center justify-between mb-8">
+                                {!isSidebarCollapsed && (<img src="iro.jpg" alt="IRO Logo" className="h-8 w-8 rounded-full mr-1" />)}
+                               {!isSidebarCollapsed && <h1 className="text-l font-bold whitespace-nowrap">IRO Monitoring System</h1>}
+                                <button onClick={toggleSidebar} className="p-2 rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <i className={`fas ${isSidebarCollapsed ? 'fa-bars' : 'fa-times'} text-lg`}></i>
+                                &nbsp;
+                                </button>
+                            </div>
+                            <nav className="space-y-4">
+                                {/* Dashboard Link (redirects to dashboard.html) */}
+                                <a href="dashboard.html" className={`block p-2 rounded-md font-semibold ${darkMode ? 'hover:bg-blue-700' : 'hover:bg-blue-600'} flex items-center`}>
+                                    <i className="fas fa-th-large mr-2"></i>
+                                    {!isSidebarCollapsed && <span className="whitespace-nowrap">Dashboard</span>}
+                                </a>
+
+                                {/* Logbooks Link (Always active and expanded on this page) */}
+                                <div className="relative">
+                                    <a
+                                        href="#"
+                                        onClick={() => handleMenuItemClick(null)} // Show overview when clicking parent Logbooks link
+                                        className={`block p-2 rounded-md font-semibold ${darkMode ? 'hover:bg-blue-700' : 'hover:bg-blue-600'} flex items-center justify-between bg-blue-700`}
+                                    >
+                                        <div className="flex items-center">
+                                            <i className="fas fa-book mr-2"></i>
+                                            {!isSidebarCollapsed && <span className="whitespace-nowrap">Logbooks</span>}
+                                        </div>
+                                        {!isSidebarCollapsed && (
+                                            <i className={`fas ${isLogbooksExpanded ? 'fa-chevron-up' : 'fa-chevron-down'} ml-2`}></i>
+                                        )}
+                                    </a>
+
+                                    {/* Logbooks Sub-Menu (always rendered in logbook.html as parent is always active) */}
+                                    {!isSidebarCollapsed && isLogbooksExpanded && (
+                                        <div className="ml-4 mt-2 space-y-2">
+                                            <a href="#" onClick={() => handleMenuItemClick('incomingDocuments')} className={`block p-2 rounded-md text-sm ${darkMode ? 'hover:bg-blue-600' : 'hover:bg-blue-500'} flex items-center ${activeMenuItem === 'incomingDocuments' ? 'bg-blue-600' : ''}`}>
+                                                <i className="fas fa-file-import mr-2 text-white"></i> Incoming Documents
+                                            </a>
+                                            <a href="#" onClick={() => handleMenuItemClick('outgoingDocuments')} className={`block p-2 rounded-md text-sm ${darkMode ? 'hover:bg-blue-600' : 'hover:bg-blue-500'} flex items-center ${activeMenuItem === 'outgoingDocuments' ? 'bg-blue-600' : ''}`}>
+                                                <i className="fas fa-file-export mr-2 text-white"></i> Outgoing Documents
+                                            </a>
+                                            <a href="#" onClick={() => handleMenuItemClick('foreignTravelsPersonnels')} className={`block p-2 rounded-md text-sm ${darkMode ? 'hover:bg-blue-600' : 'hover:bg-blue-500'} flex items-center ${activeMenuItem === 'foreignTravelsPersonnels' ? 'bg-blue-600' : ''}`}>
+                                                <i className="fas fa-user-tie mr-2 text-white"></i> Foreign Travels - Personnels
+                                            </a>
+                                            <a href="#" onClick={() => handleMenuItemClick('foreignTravelsStudents')} className={`block p-2 rounded-md text-sm ${darkMode ? 'hover:bg-blue-600' : 'hover:bg-blue-500'} flex items-center ${activeMenuItem === 'foreignTravelsStudents' ? 'bg-blue-600' : ''}`}>
+                                                <i className="fas fa-user-graduate mr-2 text-white"></i> Foreign Travels - Students
+                                            </a>
+                                            <a href="#" onClick={() => handleMenuItemClick('travelOrdersRequests')} className={`block p-2 rounded-md text-sm ${darkMode ? 'hover:bg-blue-600' : 'hover:bg-blue-500'} flex items-center ${activeMenuItem === 'travelOrdersRequests' ? 'bg-blue-600' : ''}`}>
+                                                <i className="fas fa-sticky-note mr-2 text-white"></i> Travel Orders / Requests
+                                            </a>
+                                            <a href="#" onClick={() => handleMenuItemClick('iroMemos')} className={`block p-2 rounded-md text-sm ${darkMode ? 'hover:bg-blue-600' : 'hover:bg-blue-500'} flex items-center ${activeMenuItem === 'iroMemos' ? 'bg-blue-600' : ''}`}>
+                                                <i className="fas fa-file-alt mr-2 text-white"></i> IRO Memos
+                                            </a>
+                                            <a href="#" onClick={() => handleMenuItemClick('addItem')} className={`block p-2 rounded-md text-sm ${darkMode ? 'hover:bg-blue-600' : 'hover:bg-blue-500'} flex items-center ${activeMenuItem === 'addItem' ? 'bg-blue-600' : ''}`}>
+                                                <i className="fas fa-plus-circle mr-2 text-white"></i> Add New Item
+                                            </a>
+                                        </div>
+                                    )}
+                                </div>
+                            </nav>
+                        </aside>
+
+                        {/* Content Area */}
+                        <main className={`flex-1 p-6 overflow-y-auto main-dashboard-content relative ${darkMode ? 'dark-mode-main-content' : ''}`}>
+                            <div className="flex justify-between items-center mb-8">
+                                <SearchBar darkMode={darkMode} />
+
+                                <div className="flex items-center z-50 mr-4">
+                                    <button
+                                        onClick={toggleDarkMode}
+                                        title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                                        className={`
+                                            inline-flex justify-center items-center
+                                            h-10 w-10 rounded-full shadow-sm
+                                            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
+                                            ${darkMode
+                                                ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+                                                : 'bg-gray-200 hover:bg-gray-300 text-gray-600'
+                                            }
+                                            mr-4
+                                        `}
+                                    >
+                                        <i className={darkMode ? "fas fa-sun text-lg" : "fas fa-moon text-lg"}></i>
+                                    </button>
+
+                                    {/* Profile Dropdown Container */}
+                                    <div id="profile-dropdown-container" className="relative inline-block text-left" ref={dropdownRef}>
+                                        <button
+                                            type="button"
+                                            onClick={toggleProfileDropdown}
+                                            className="inline-flex justify-center items-center h-10 w-10 rounded-full text-white bg-blue-700 hover:bg-blue-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                            id="user-menu-button"
+                                            aria-expanded={isProfileDropdownOpen}
+                                            aria-haspopup="true"
+                                        >
+                                            <i className="fas fa-user text-lg -mr-0.6"></i>
+                                        </button>
+
+                                        {isProfileDropdownOpen && (
+                                            <div
+                                                className="profile-dropdown-menu origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                                                role="menu"
+                                                aria-orientation="vertical"
+                                                aria-labelledby="user-menu-button"
+                                                tabIndex="-1"
+                                            >
+                                                <div className="py-1" role="none">
+                                                    <div className="px-4 py-2 border-b border-gray-200 text-gray-700">
+                                                        <p className="font-bold">Juan Dela Cruz</p>
+                                                        <p className="text-xs text-gray-500">Administrator</p>
+                                                    </div>
+                                                    <a href="profile-page.html" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" role="menuitem" tabIndex="-1">
+                                                        <i className="fas fa-user-circle mr-2"></i> My Profile
+                                                    </a>
+                                                    <a href="#" onClick={handleManageProfileClick} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" role="menuitem" tabIndex="-1">
+                                                        <i className="fas fa-cog mr-2"></i> Manage Profile
+                                                    </a>
+                                                    <div className="border-t border-gray-200"></div>
+                                                    <button onClick={onSignOut} className="block w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50 hover:text-red-900" role="menuitem" tabIndex="-1">
+                                                        <i className="fas fa-sign-out-alt mr-2"></i> Sign Out
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Conditional Rendering of Main Content Sections (Logbook specific) */}
+                            {activeMenuItem === null && ( // This is for the main Logbooks Overview if no sub-item is selected
+                                <LogbookOverviewCards 
+                                    darkMode={darkMode} 
+                                    onSelectLogbookType={(type) => handleMenuItemClick(type)}
+                                />
+                            )}
+
+                            {activeMenuItem === 'incomingDocuments' && (
+                                selectedIncomingDocumentYear ? (
+                                    <DocumentContent type="incomingDocuments" year={selectedIncomingDocumentYear} darkMode={darkMode} onBack={() => handleBackToFolderView('incomingDocuments')} />
+                                ) : (
+                                    <IncomingDocumentsView darkMode={darkMode} onYearSelect={(year) => handleYearSelect('incomingDocuments', year)} onBack={() => { handleMenuItemClick(null); }} />
+                                )
+                            )}
+
+                            {activeMenuItem === 'outgoingDocuments' && (
+                                selectedOutgoingDocumentYear ? (
+                                    <DocumentContent type="outgoingDocuments" year={selectedOutgoingDocumentYear} darkMode={darkMode} onBack={() => handleBackToFolderView('outgoingDocuments')} />
+                                ) : (
+                                    <OutgoingDocumentsView darkMode={darkMode} onYearSelect={(year) => handleYearSelect('outgoingDocuments', year)} onBack={() => { handleMenuItemClick(null); }} />
+                                )
+                            )}
+
+                            {activeMenuItem === 'foreignTravelsPersonnels' && (
+                                selectedFTPYear ? (
+                                    <DocumentContent type="foreignTravelsPersonnels" year={selectedFTPYear} darkMode={darkMode} onBack={() => handleBackToFolderView('foreignTravelsPersonnels')} />
+                                ) : (
+                                    <ForeignTravelsPersonnelsView darkMode={darkMode} onYearSelect={(year) => handleYearSelect('foreignTravelsPersonnels', year)} onBack={() => { handleMenuItemClick(null); }} />
+                                )
+                            )}
+
+                            {activeMenuItem === 'foreignTravelsStudents' && (
+                                selectedFTSYear ? (
+                                    <DocumentContent type="foreignTravelsStudents" year={selectedFTSYear} darkMode={darkMode} onBack={() => handleBackToFolderView('foreignTravelsStudents')} />
+                                ) : (
+                                    <ForeignTravelsStudentsView darkMode={darkMode} onYearSelect={(year) => handleYearSelect('foreignTravelsStudents', year)} onBack={() => { handleMenuItemClick(null); }} />
+                                )
+                            )}
+
+                            {activeMenuItem === 'travelOrdersRequests' && (
+                                selectedTORYear ? (
+                                    <DocumentContent type="travelOrdersRequests" year={selectedTORYear} darkMode={darkMode} onBack={() => handleBackToFolderView('travelOrdersRequests')} />
+                                ) : (
+                                    <TravelOrdersRequestsView darkMode={darkMode} onYearSelect={(year) => handleYearSelect('travelOrdersRequests', year)} onBack={() => { handleMenuItemClick(null); }} />
+                                )
+                            )}
+
+                            {activeMenuItem === 'iroMemos' && (
+                                <IROMemoView darkMode={darkMode} />
+                            )}
+
+                            {activeMenuItem === 'addItem' && (
+                                <AddItemView darkMode={darkMode} />
+                            )}
+
+                        </main>
+                    </div>
+                    <ManageProfileModal show={showManageProfileModal} onClose={handleCloseManageProfileModal} darkMode={darkMode} />
+                </div>
+            );
+        }
+
+        // =====================================================================
+        // ROOT APP COMPONENT (Mounts the LogbookPage)
+        // This is the very top-level React component for logbook.html that
+        // determines if a user is logged in and renders the LogbookPage if they are.
+        // =====================================================================
+
+        function App() {
+            const [loggedInUser, setLoggedInUser] = React.useState(() => localStorage.getItem('loggedInUser'));
+            
+            const [darkMode, setDarkMode] = React.useState(() => {
+                try {
+                    const savedMode = localStorage.getItem('darkModePreference');
+                    return savedMode ? JSON.parse(savedMode) : false;
+                } catch (e) {
+                    console.error("Failed to parse dark mode preference from localStorage:", e);
+                    return false;
+                }
+            });
+
+            const toggleDarkMode = () => {
+                setDarkMode(prevMode => {
+                    const newMode = !prevMode;
+                    localStorage.setItem('darkModePreference', JSON.stringify(newMode));
+                    document.body.classList.toggle('dark-mode', newMode);
+                    return newMode;
+                });
+            };
+
+            React.useEffect(() => {
+                document.body.classList.toggle('dark-mode', darkMode);
+            }, [darkMode]);
+
+            const handleLoginSuccess = (username) => {
+                localStorage.setItem('loggedInUser', username);
+                setLoggedInUser(username);
+            };
+
+            const handleSignOut = () => {
+                localStorage.removeItem('loggedInUser');
+                localStorage.removeItem('darkModePreference');
+                // Redirect to login.html when signing out from logbook.html
+                if (window.electronAPI && window.electronAPI.navigateToLogin) {
+                    window.electronAPI.navigateToLogin();
+                } else {
+                        window.location.replace('login.html');
+                }
+            };
+
+            React.useEffect(() => {
+                if (!loggedInUser) {
+                    // If not logged in, redirect to login.html
+                    if (window.electronAPI && window.electronAPI.navigateToLogin) {
+                        window.electronAPI.navigateToLogin();
+                    } else {
+                        window.location.replace('login.html');
+                    }
+                }
+            }, [loggedInUser]);
+
+            if (!loggedInUser) {
+                return null; // Don't render anything until logged in (redirect handles it)
+            }
+
+            return (
+                <React.Fragment>
+                    <div className={`w-screen h-screen flex justify-center items-center overflow-hidden dashboard-background`}>
+                        <LogbookPage onSignOut={handleSignOut} darkMode={darkMode} username={loggedInUser} toggleDarkMode={toggleDarkMode} />
+                    </div>
+                </React.Fragment>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>

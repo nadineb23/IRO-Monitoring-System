@@ -1,0 +1,289 @@
+/* Custom CSS for the IRO Monitoring System - Login Page */
+
+/* Base body styles shared across pages */
+body {
+    font-family: 'Urbanist', sans-serif;
+    -webkit-app-region: drag; /* For Electron drag region */
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    overflow: hidden; /* Hide scrollbars if content overflows */
+    display: flex; /* Make body a flex container */
+    justify-content: flex-end; /* Pushes the #root content to the right */
+    align-items: center; /* Center content vertically */
+    /* Restore iro.jpg background for LIGHT MODE */
+    background-image: url('iro.jpg');
+    background-size: 45% auto; /* Keep this size for iro.jpg */
+    background-position: 10% center; /* Keep this position for iro.jpg */
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-color: #FFFFFF; /* White background for the right side, if image doesn't cover */
+    color: #333; /* Default text color */
+    transition: background-color 0.3s ease, color 0.3s ease, background-image 0.3s ease; /* Smooth transition for theme changes, include background-image */
+}
+
+/* Dark mode styles for the body */
+body.dark-mode {
+    background-color: #000000; /* Explicitly black background for the body in dark mode */
+    background-image: none; /* Hide iro.jpg in dark mode */
+    color: #e2e8f0; /* Light text color for the body */
+}
+
+/* Ensure interactive elements don't drag the Electron window */
+button, input, a, select, textarea {
+    -webkit-app-region: no-drag;
+}
+
+/* Dark mode toggle button styles (fixed position, top-right) */
+.dark-mode-toggle {
+    position: fixed; /* Position relative to the viewport */
+    top: 1rem; /* 1rem from the top */
+    right: 1rem; /* 1rem from the right */
+    background: none;
+    border: none;
+    font-size: 1.5rem; /* Icon size */
+    cursor: pointer;
+    color: #6b7280; /* Default icon color */
+    transition: color 0.3s ease, transform 0.2s ease;
+    z-index: 1000; /* Ensure it's on top of everything */
+    padding: 0.5rem; /* Add some padding for easier clicking */
+    border-radius: 9999px; /* Make it circular */
+}
+
+.dark-mode-toggle:hover {
+    background-color: rgba(0, 0, 0, 0.05); /* Subtle background on hover */
+    color: #333; /* Darker on hover */
+    transform: scale(1.1);
+}
+
+/* Dark mode toggle icon color in dark mode */
+body.dark-mode .dark-mode-toggle {
+    color: #e2e8f0; /* Light icon color in dark mode */
+    background-color: rgba(255, 255, 255, 0.05); /* Subtle background on dark mode */
+}
+
+body.dark-mode .dark-mode-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.1); /* Lighter background on hover in dark mode */
+    color: #a0aec0; /* Lighter on hover in dark mode */
+}
+
+/* Styles for the main login container */
+.login-container {
+    background-color: rgba(255, 255, 255, 0.4); /* Made background more transparent */
+    border-radius: 1.5rem; /* More rounded corners */
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); /* Deeper shadow */
+    padding: 1.1rem; /* Keep vertical padding */
+    max-width: 535px; /* Increased max-width to make the container wider */
+    width: 90%; /* Responsive width */
+    height: auto; /* Allow height to adjust based on content */
+    text-align: left; /* Align text content to left as per new design */
+    position: relative; /* For absolute positioning of top logo */
+    margin-left: 50%; /* Ensures it stays on the right when resized */
+    padding-left: 2rem;
+    padding-right: 2rem; /* Corrected to '2rem' from 'rem' */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transition for theme changes */
+}
+
+/* Dark mode styles for the login container */
+body.dark-mode .login-container {
+    background-color: rgba(26, 32, 44, 0.8); /* Darker, slightly transparent background for dark mode */
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.12); /* Darker shadow */
+}
+
+/* The `login-background` div is the full screen wrapper */
+/* This rule applies when dark mode is active on the body */
+body.dark-mode .login-background {
+    background-color: black; /* Black background for the wrapper in dark mode */
+    background-image: url('iroblack.png'); /* Display iroblack.png in dark mode */
+    background-size: 45% auto; /* MATCHES iro.jpg size */
+    background-position: 10% center; /* MATCHES iro.jpg position */
+    background-repeat: no-repeat;
+    /* You might want a filter here too if the image is too bright */
+    /* filter: brightness(0.7); */
+}
+
+
+/* Heading styles for "IRO MONITORING SYSTEM" */
+.welcome-back {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 0.4rem;
+    color: #333;
+    text-align: center;
+    font-family: 'Arial', sans-serif;
+    transition: color 0.3s ease; /* Smooth transition for theme changes */
+}
+
+/* Dark mode for welcome-back heading */
+body.dark-mode .welcome-back {
+    color: #e2e8f0;
+}
+
+.login-description {
+    font-size: 0.85rem;
+    color: #000000;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    line-height: 1.4;
+    font-weight: 700;
+    transition: color 0.3s ease; /* Smooth transition for theme changes */
+}
+
+/* Dark mode for login-description */
+body.dark-mode .login-description {
+    color: #cbd5e0;
+}
+
+/* Input field group styles */
+.input-group {
+    margin-bottom: 1rem;
+    position: relative;
+}
+
+.input-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.4rem;
+    transition: color 0.3s ease; /* Smooth transition for theme changes */
+}
+
+/* Dark mode for input labels */
+body.dark-mode .input-label {
+    color: #a0aec0;
+}
+
+.styled-input {
+    width: 100%;
+    padding: 0.65rem 1rem;
+    padding-left: 2.2rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.75rem;
+    font-size: 0.95rem;
+    color: #000000;
+    background-color: #f9fafb;
+    outline: none;
+    transition: all 0.2s ease-in-out, background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease; /* Smooth transition for theme changes */
+    font-weight: 400;
+}
+
+/* Dark mode for styled inputs */
+body.dark-mode .styled-input {
+    background-color: #2d3748;
+    border-color: #4a5568;
+    color: #e2e8f0;
+    /* Placeholder color for dark mode */
+    &::placeholder {
+        color: #a0aec0; /* A slightly lighter gray for placeholders */
+    }
+    &::-webkit-input-placeholder { /* For Webkit browsers */
+        color: #a0aec0;
+    }
+    &::-moz-placeholder { /* For Mozilla Firefox */
+        color: #a0aec0;
+        opacity: 1; /* Firefox default is lower opacity */
+    }
+    &:-ms-input-placeholder { /* For Internet Explorer 10-11 */
+        color: #a0aec0;
+    }
+    &:-moz-placeholder { /* For older Firefox */
+        color: #a0aec0;
+        opacity: 1;
+    }
+}
+
+.styled-input:focus {
+    border-color: #5b9bd5;
+    box-shadow: 0 0 0 3px rgba(91, 155, 213, 0.3);
+}
+
+.input-icon {
+    position: absolute;
+    left: 0.7rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.input-icon-right {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #22c55e;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Remember Me checkbox and Forget Password link */
+.options-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.2rem;
+    font-size: 0.8rem;
+    color: #6b7280;
+    font-weight: 400;
+    transition: color 0.3s ease; /* Smooth transition for theme changes */
+}
+
+/* Dark mode for options group */
+body.dark-mode .options-group {
+    color: #a0aec0;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+}
+
+.remember-me input[type="checkbox"] {
+    margin-right: 0.4rem;
+    accent-color: #306dd0;
+    transform: scale(0.9);
+}
+
+.forget-password-link {
+    color: #6b7280;
+    font-size: 0.8rem;
+    text-decoration: none;
+    transition: color 0.2s ease-in-out;
+    font-weight: 400;
+}
+
+.forget-password-link:hover {
+    color: #000000;
+    text-decoration: underline;
+}
+
+/* Dark mode for forget password link */
+body.dark-mode .forget-password-link {
+    color: #a0aec0;
+}
+
+body.dark-mode .forget-password-link:hover {
+    color: #cbd5e0;
+}
+
+/* Sign In button */
+.sign-in-button {
+    width: 100%;
+    padding: 0.7rem 1.2rem;
+    background-color: #306dd0;
+    color: #ffffff;
+    font-weight: 600;
+    border-radius: 0.75rem;
+    transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+    margin-top: 1.2rem;
+    border: none;
+    font-size: 0.95rem;
+}
+
+.sign-in-button:hover {
+    background-color: #140ca2;
+    transform: translateY(-2px);
+}

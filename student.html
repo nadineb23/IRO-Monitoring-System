@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRO Monitoring System - Students</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Urbanist -->
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome CDN for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Link to login-specific stylesheet -->
+    <link rel="stylesheet" href="login.css">
+    <!-- Link to logbook-specific stylesheet (contains general dashboard/sidebar styles) -->
+    <link rel="stylesheet" href="logbook.css">
+    <!-- Link to profile-specific stylesheet -->
+    <link rel="stylesheet" href="profile.css">
+</head>
+<body class="h-full w-full">
+    <div id="student-root"></div>
+
+    <!-- React and ReactDOM CDNs -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script>
+        // Electron API for navigation (if applicable)
+        const electronAPI = window.electronAPI;
+    </script>
+
+    <script type="text/babel">
+        // =====================================================================
+        // REUSABLE LAYOUT COMPONENTS (Copied and adapted for student.html)
+        // =====================================================================
+
+        // SearchBar Component
+        function SearchBar({ darkMode }) {
+            return (
+                <div className="flex-grow flex items-center search-bar-container">
+                    <input
+                        type="text"
+                        placeholder="Search students..."
+                        className={`
+                            w-full max-w-lg p-3 pl-4 rounded-full shadow-md
+                            ${darkMode
+                                ? 'bg-gray-800 text-gray-200 border border-gray-600 focus:border-blue-500 focus:ring-blue-500'
+                                : 'bg-white text-gray-700 border border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                            }
+                            focus:outline-none focus:ring-1
+                        `}
+                    />
+                    <i className="fas fa-search -ml-8 text-gray-400"></i>
+                </div>
+            );
+        }
+
+        // Header Component (for the main content area, now with profile dropdown)
+        function Header({ darkMode, toggleDarkMode, handleSignOut }) {
+            const [isProfileDropdownOpen, setIsProfileDropdownOpen] = React.useState(false);
+            const dropdownRef = React.useRef(null); // Ref for detecting clicks outside the dropdown
+
+            const toggleProfileDropdown = () => {
+                setIsProfileDropdownOpen(prev => !prev);
+            };
+
+            // Effect to close the dropdown when clicking outside it
+            React.useEffect(() => {
+                function handleClickOutside(event) {
+                    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                        setIsProfileDropdownOpen(false);
+                    }
+                }
+                document.addEventListener("mousedown", handleClickOutside);
+                return () => {
+                    document.removeEventListener("mousedown", handleClickOutside);
+                };
+            }, []);
+
+            return (
+                <header className={`main-header flex items-center justify-between p-4 shadow-md ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}>
+                    <SearchBar darkMode={darkMode} />
+                    <div className="flex items-center z-50 ml-4">
+                        <button
+                            onClick={toggleDarkMode}
+                            title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                            className={`
+                                inline-flex justify-center items-center
+                                h-10 w-10 rounded-full shadow-sm
+                                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
+                                ${darkMode
+                                    ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+                                    : 'bg-gray-200 hover:bg-gray-300 text-gray-600'
+                                }
+                                mr-4
+                            `}
+                        >
+                            <i className={darkMode ? "fas fa-sun text-lg" : "fas fa-moon text-lg"}></i>
+                        </button>
+
+                        {/* Profile Dropdown */}
+                        <div className="relative" ref={dropdownRef}>
+                            <button
+                                onClick={toggleProfileDropdown}
+                                className="flex items-center space-x-2 text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                id="user-menu-button"
+                                aria-expanded={isProfileDropdownOpen}
+                                aria-haspopup="true"
+                            >
+                                <img
+                                    className="h-10 w-10 rounded-full"
+                                    src="https://placehold.co/100x100/A0B9DE/FFF?text=AD"
+                                    alt="Admin Profile"
+                                />
+                                <span className={`${darkMode ? 'text-gray-200' : 'text-gray-700'} hidden md:inline`}>Admin</span>
+                                <i className={`fas fa-chevron-down text-xs ml-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'} hidden md:inline`}></i>
+                            </button>
+
+                            {isProfileDropdownOpen && (
+                                <div
+                                    className={`origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 focus:outline-none ${darkMode ? 'bg-gray-700' : 'bg-white'}`}
+                                    role="menu"
+                                    aria-orientation="vertical"
+                                    aria-labelledby="user-menu-button"
+                                    tabIndex="-1"
+                                >
+                                    <div className="py-1" role="none">
+                                        <div className="px-4 py-2 border-b border-gray-200 text-gray-700">
+                                            <p className="font-bold">Juan Dela Cruz</p>
+                                            <p className="text-xs text-gray-500">Administrator</p>
+                                        </div>
+                                        <a href="#" className={`block px-4 py-2 text-sm ${darkMode ? 'text-gray-200 hover:bg-gray-600' : 'text-gray-700 hover:bg-gray-100'}`} role="menuitem" tabIndex="-1">
+                                            Your Profile
+                                        </a>
+                                        <a href="#" className={`block px-4 py-2 text-sm ${darkMode ? 'text-gray-200 hover:bg-gray-600' : 'text-gray-700 hover:bg-gray-100'}`} role="menuitem" tabIndex="-1">
+                                            Settings
+                                        </a>
+                                        <button
+                                            onClick={handleSignOut}
+                                            className={`block w-full text-left px-4 py-2 text-sm ${darkMode ? 'text-red-300 hover:bg-red-700 hover:text-white' : 'text-red-700 hover:bg-red-50 hover:text-red-900'}`}
+                                            role="menuitem"
+                                            tabIndex="-1"
+                                        >
+                                            Sign out
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </header>
+            );
+        }
+
+        // Sidebar Component
+        function Sidebar({ darkMode, isCollapsed, toggleSidebar, activeMenuItem, onMenuItemClick }) {
+            return (
+                <aside className={`sidebar fixed top-0 left-0 h-full p-4 shadow-lg bg-[#140ca2] text-white transition-all duration-300 ease-in-out z-40 ${isCollapsed ? 'w-16' : 'w-64'}`}>
+                    {/* Sidebar Header with Toggle Button */}
+                    <div className="flex items-center justify-between mb-8">
+                        {!isCollapsed && (
+                            <img src="iro.jpg" alt="IRO Logo" className="h-8 w-8 rounded-full mr-2" />
+                        )}
+                        {!isCollapsed && <h1 className="text-xl font-bold">IRO System</h1>}
+                        <button onClick={toggleSidebar} className="p-2 rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <i className={`fas ${isCollapsed ? 'fa-bars' : 'fa-times'} text-lg`}></i>
+                            &nbsp;
+                        </button>
+                    </div>
+                    <nav className="space-y-4">
+                        {/* Dashboard Link (NAVIGATES to dashboard.html) */}
+                        <a href="#" onClick={(e) => { e.preventDefault(); if(electronAPI && electronAPI.navigateToDashboard) { electronAPI.navigateToDashboard(); } else { window.location.href='dashboard.html'; } }} className={`block p-2 rounded-md font-semibold ${darkMode ? 'hover:bg-blue-700' : 'hover:bg-blue-600'} flex items-center`}>
+                            <i className="fas fa-th-large mr-2"></i>
+                            {!isCollapsed && <span className="whitespace-nowrap">Dashboard</span>}
+                        </a>
+
+                        {/* Students Link (stays on this page, internal view change) */}
+                        <a href="#" onClick={() => onMenuItemClick('list')} className={`block p-2 rounded-md font-semibold ${darkMode ? 'hover:bg-blue-700' : 'hover:bg-blue-600'} flex items-center ${activeMenuItem === 'list' ? 'bg-blue-700' : ''}`}>
+                            <i className="fas fa-user-graduate mr-2"></i>
+                            {!isCollapsed && <span className="whitespace-nowrap">Students</span>}
+                        </a>
+
+                        {/* Travel Order / Authority to Travel Link (NAVIGATES to dashboard.html with view param) */}
+                        <a href="#" onClick={(e) => { e.preventDefault(); if(electronAPI && electronAPI.navigateToDashboard) { electronAPI.navigateToDashboard('travel-orders'); } else { window.location.href='dashboard.html?view=travel-orders'; } }} className={`block p-2 rounded-md font-semibold ${darkMode ? 'hover:bg-blue-700' : 'hover:bg-blue-600'} flex items-center`}>
+                            <i className="fas fa-clipboard-list mr-2"></i>
+                            {!isCollapsed && <span className="whitespace-nowrap">Travel Order / Authority to Travel</span>}
+                        </a>
+                    </nav>
+                </aside>
+            );
+        }
+
+        // =====================================================================
+        // STUDENT RELATED COMPONENTS
+        // These components are now specific to student.html
+        // =====================================================================
+
+        // AddStudentModal Component
+        function AddStudentModal({ show, onClose, darkMode }) {
+            const [yearLevel, setYearLevel] = React.useState('1st Year');
+
+            if (!show) {
+                return null;
+            }
+
+            const handleYearLevelChange = (e) => {
+                setYearLevel(e.target.value);
+            };
+
+            const showCorUpload = yearLevel !== '1st Year';
+
+            return (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+                    <div className={`rounded-lg shadow-xl w-11/12 md:w-1/2 lg:w-1/3 p-6 relative ${darkMode ? 'bg-gray-800 text-gray-200' : 'bg-white text-gray-800'}`}>
+                        <button
+                            onClick={onClose}
+                            className={`absolute top-3 right-3 text-2xl font-bold ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-700 hover:text-gray-900'}`}
+                        >
+                            &times;
+                        </button>
+                        <h3 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Add New Student</h3>
+
+                        <form>
+                            <div className="mb-4">
+                                <label htmlFor="first-name" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>First Name</label>
+                                <input
+                                    type="text"
+                                    id="first-name"
+                                    className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`}
+                                    placeholder="Enter First Name"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="last-name" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Last Name</label>
+                                <input
+                                    type="text"
+                                    id="last-name"
+                                    className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`}
+                                    placeholder="Enter Last Name"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="email-student" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Email</label>
+                                <input
+                                    type="email"
+                                    id="email-student"
+                                    className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`}
+                                    placeholder="Enter Email Address"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="program" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Program</label>
+                                <input
+                                    type="text"
+                                    id="program"
+                                    className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`}
+                                    placeholder="Enter Program (e.g., BSIT)"
+                                />
+                            </div>
+                            {/* Year Level Dropdown */}
+                            <div className="mb-4">
+                                <label htmlFor="year-level" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Year Level</label>
+                                <select
+                                    id="year-level"
+                                    className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`}
+                                    value={yearLevel}
+                                    onChange={handleYearLevelChange}
+                                >
+                                    <option value="1st Year">1st Year</option>
+                                    <option value="2nd Year">2nd Year</option>
+                                    <option value="3rd Year">3rd Year</option>
+                                    <option value="4th Year">4st Year</option>
+                                </select>
+                            </div>
+                            {/* Conditional COR Upload Field */}
+                            {showCorUpload && (
+                                <div className="mb-4">
+                                    <label htmlFor="attach-cor" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Attach COR</label>
+                                    <input
+                                        type="file"
+                                        id="attach-cor"
+                                        className={`w-full p-2 border rounded-md file:mr-4 file:py-2 file:px-4
+                                                    file:rounded-full file:border-0 file:text-sm file:font-semibold
+                                                    ${darkMode
+                                                        ? 'file:bg-blue-700 file:text-white hover:file:bg-blue-800 text-gray-200'
+                                                        : 'file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 text-gray-700'
+                                                    }`}
+                                    />
+                                    <p className={`mt-1 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Please attach Certificate of Registration (COR) for transfer students.</p>
+                                </div>
+                            )}
+                            {/* Nationality Field */}
+                            <div className="mb-4">
+                                <label htmlFor="nationality" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Nationality</label>
+                                <input
+                                    type="text"
+                                    id="nationality"
+                                    className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`}
+                                    placeholder="Enter Nationality"
+                                />
+                            </div>
+                            <div className="flex justify-end">
+                                <button
+                                    type="button"
+                                    onClick={onClose}
+                                    className={`mr-2 px-4 py-2 rounded-md font-semibold ${darkMode ? 'bg-gray-600 hover:bg-gray-700 text-white' : 'bg-gray-300 hover:bg-gray-400 text-gray-800'}`}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className={`px-4 py-2 rounded-md font-semibold ${darkMode ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
+                                >
+                                    Add Student
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            );
+        }
+
+        // ViewDocumentsModal Component
+        function ViewDocumentsModal({ show, onClose, darkMode, documents }) {
+            if (!show) {
+                return null;
+            }
+
+            const handleViewFile = (fileName) => {
+                console.log(`Viewing file: ${fileName}`);
+                // In a real application, you would implement logic here to open/download the file
+            };
+
+            return (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+                    <div className={`rounded-lg shadow-xl w-11/12 md:w-1/2 lg:w-1/3 p-6 relative ${darkMode ? 'bg-gray-800 text-gray-200' : 'bg-white text-gray-800'}`}>
+                        <button
+                            onClick={onClose}
+                            className={`absolute top-3 right-3 text-2xl font-bold ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-700 hover:text-gray-900'}`}
+                        >
+                            &times;
+                        </button>
+                        <h3 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Attached Documents</h3>
+
+                        {documents && documents.length > 0 ? (
+                            <ul className="space-y-3">
+                                {documents.map((doc, index) => (
+                                    <li key={index} className={`flex items-center justify-between p-3 rounded-md ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                                        <span className={`${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                            <i className="fas fa-file-alt mr-2"></i> {doc}
+                                        </span>
+                                        <button
+                                            onClick={() => handleViewFile(doc)}
+                                            className={`px-3 py-1 rounded-md font-semibold text-xs
+                                                        ${darkMode ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'}
+                                            `}
+                                        >
+                                            View
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>No documents attached for this student.</p>
+                        )}
+
+                        <div className="flex justify-end mt-6">
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className={`px-4 py-2 rounded-md font-semibold ${darkMode ? 'bg-gray-600 hover:bg-gray-700 text-white' : 'bg-gray-300 hover:bg-gray-400 text-gray-800'}`}
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // StudentView Component (For listing student records)
+        function StudentView({ darkMode, onAddStudentClick, onViewDocumentsClick, onNavigateToStudentTravelOrders }) {
+            // Mock student data
+            const [students, setStudents] = React.useState([
+                { id: 'S001', name: 'Maria Santos', program: 'BSIT', yearLevel: '3rd Year', nationality: 'Filipino', documents: ['Maria_Passport.pdf', 'Maria_Visa.pdf', 'Maria_Transcript.pdf'] },
+                { id: 'S002', name: 'John Doe', program: 'BSCS', yearLevel: '2nd Year', nationality: 'American', documents: ['John_Passport.pdf', 'John_Medical.pdf'] },
+                { id: 'S003', name: 'Aisha Khan', program: 'BSCpE', yearLevel: '4th Year', nationality: 'Pakistani', documents: ['Aisha_LOA.pdf', 'Aisha_COR.pdf'] },
+                { id: 'S004', name: 'Hiroshi Tanaka', program: 'BSECE', yearLevel: '1st Year', nationality: 'Japanese', documents: [] },
+            ]);
+
+            const [sortOption, setSortOption] = React.useState('name-asc');
+            const [searchTerm, setSearchTerm] = React.useState('');
+
+            const yearLevelToNumber = (yearLevel) => {
+                switch (yearLevel) {
+                    case '1st Year': return 1;
+                    case '2nd Year': return 2;
+                    case '3rd Year': return 3;
+                    case '4th Year': return 4;
+                    default: return 0;
+                }
+            };
+
+            const filteredAndSortedStudents = React.useMemo(() => {
+                let sortableStudents = [...students];
+
+                if (searchTerm) {
+                    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+                    sortableStudents = sortableStudents.filter(student =>
+                        student.name.toLowerCase().includes(lowerCaseSearchTerm) ||
+                        student.id.toLowerCase().includes(lowerCaseSearchTerm) ||
+                        student.program.toLowerCase().includes(lowerCaseSearchTerm) ||
+                        student.yearLevel.toLowerCase().includes(lowerCaseSearchTerm) ||
+                        student.nationality.toLowerCase().includes(lowerCaseSearchTerm)
+                    );
+                }
+
+                switch (sortOption) {
+                    case 'name-asc':
+                        sortableStudents.sort((a, b) => a.name.localeCompare(b.name));
+                        break;
+                    case 'name-desc':
+                        sortableStudents.sort((a, b) => b.name.localeCompare(a.name));
+                        break;
+                    case 'year-asc':
+                        sortableStudents.sort((a, b) => yearLevelToNumber(a.yearLevel) - yearLevelToNumber(b.yearLevel));
+                        break;
+                    case 'year-desc':
+                        sortableStudents.sort((a, b) => yearLevelToNumber(b.yearLevel) - yearLevelToNumber(a.yearLevel));
+                        break;
+                    default:
+                        break;
+                }
+                return sortableStudents;
+            }, [students, sortOption, searchTerm]);
+
+
+            const handleEditStudent = (studentId) => {
+                console.log('Edit student:', studentId);
+                // Implement edit logic here
+            };
+
+            const handleDeleteStudent = (studentId) => {
+                console.log('Delete student:', studentId);
+                const isConfirmed = prompt(`Are you sure you want to delete student ID: ${studentId}? Type 'yes' to confirm.`);
+                if (isConfirmed && isConfirmed.toLowerCase() === 'yes') {
+                    setStudents(prevStudents => prevStudents.filter(student => student.id !== studentId));
+                }
+            };
+
+            return (
+                <div className="p-6">
+                    <h2 className={`text-3xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Student Records</h2>
+                    <p className={`mb-4 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        Manage and view all student internationalization records here.
+                    </p>
+
+                    <div className="flex justify-start mb-6">
+                        <button
+                            onClick={onNavigateToStudentTravelOrders}
+                            className={`px-4 py-2 rounded-md font-semibold text-sm
+                                ${darkMode ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'bg-indigo-500 hover:bg-indigo-600 text-white'}
+                            `}
+                        >
+                            <i className="fas fa-plane-departure mr-2"></i> View Student Travel Orders
+                        </button>
+                    </div>
+
+                    <div className={`mt-8 p-6 rounded-lg shadow-md overflow-x-auto max-w-full mx-auto ${darkMode ? 'bg-gray-700 text-gray-200' : 'bg-white text-gray-700'}`}>
+                        <div className="flex flex-col md:flex-row justify-between items-center mb-4 space-y-4 md:space-y-0 md:space-x-4">
+                            <h3 className="text-xl font-semibold mb-2 md:mb-0">Student List</h3>
+                            <div className="flex items-center space-x-4 w-full md:w-auto">
+                                <div className="relative flex-grow">
+                                    <input
+                                        type="text"
+                                        placeholder="Search students..."
+                                        className={`
+                                            w-full p-2 pl-4 rounded-full border
+                                            ${darkMode
+                                                ? 'bg-gray-800 text-gray-200 border-gray-600 focus:border-blue-500 focus:ring-blue-500'
+                                                : 'bg-white text-gray-700 border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                                            }
+                                            focus:outline-none focus:ring-1
+                                        `}
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                    <i className="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                </div>
+
+                                <label htmlFor="sort-students" className={`text-sm font-medium whitespace-nowrap ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Sort By:</label>
+                                <select
+                                    id="sort-students"
+                                    className={`p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`}
+                                    value={sortOption}
+                                    onChange={(e) => setSortOption(e.target.value)}
+                                >
+                                    <option value="name-asc">Name (A-Z)</option>
+                                    <option value="name-desc">Name (Z-A)</option>
+                                    <option value="year-asc">Year Level (Earliest to Oldest)</option>
+                                    <option value="year-desc">Year Level (Oldest to Earliest)</option>
+                                </select>
+
+                                <button
+                                    onClick={onAddStudentClick}
+                                    className={`px-4 py-2 rounded-md font-semibold text-sm
+                                        ${darkMode ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'}
+                                    `}
+                                >
+                                    <i className="fas fa-plus mr-1"></i> Add New Student
+                                </button>
+                            </div>
+                        </div>
+                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+                            <thead className={`${darkMode ? 'bg-gray-600' : 'bg-gray-50'}`}>
+                                <tr>
+                                    <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Student ID</th>
+                                    <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                    <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Program</th>
+                                    <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Year Level</th>
+                                    <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Nationality</th>
+                                    <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Documents</th>
+                                    <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
+                                {filteredAndSortedStudents.length > 0 ? (
+                                    filteredAndSortedStudents.map(student => (
+                                        <tr key={student.id}>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-center">{student.id}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">{student.name}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">{student.program}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">{student.yearLevel}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">{student.nationality}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                                {student.documents && student.documents.length > 0 ? (
+                                                    <button
+                                                        onClick={() => onViewDocumentsClick(student.documents)}
+                                                        className={`px-3 py-1 rounded-md font-semibold text-xs
+                                                                    ${darkMode ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'bg-indigo-500 hover:bg-indigo-600 text-white'}
+                                                        `}
+                                                    >
+                                                        View ({student.documents.length})
+                                                    </button>
+                                                ) : (
+                                                    <span className={`${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>None</span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-center">
+                                                <div className="flex space-x-2 justify-center">
+                                                    <button
+                                                        onClick={() => handleEditStudent(student.id)}
+                                                        className={`p-2 rounded-full ${darkMode ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
+                                                        title="Edit Student"
+                                                    >
+                                                        <i className="fas fa-edit"></i>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteStudent(student.id)}
+                                                        className={`p-2 rounded-full ${darkMode ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-red-500 hover:bg-red-600 text-white'}`}
+                                                        title="Delete Student"
+                                                    >
+                                                        <i className="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
+                                            No student records found.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        }
+
+        // Add Student With Cost Travel Order Modal
+        function AddStudentWithCostTOModal({ show, onClose, darkMode, onAddRecord }) {
+            const [id, setId] = React.useState('');
+            const [name, setName] = React.useState('');
+            const [program, setProgram] = React.useState('');
+            const [destination, setDestination] = React.useState('');
+            const [purpose, setPurpose] = React.useState('');
+            const [approvedAmount, setApprovedAmount] = React.useState('');
+            const [status, setStatus] = React.useState('Pending');
+
+            if (!show) return null;
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                onAddRecord({ id, name, program, destination, purpose, approvedAmount, status });
+                onClose();
+            };
+
+            return (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+                    <div className={`rounded-lg shadow-xl w-11/12 md:w-1/2 lg:w-1/3 p-6 relative ${darkMode ? 'bg-gray-800 text-gray-200' : 'bg-white text-gray-800'}`}>
+                        <button onClick={onClose} className={`absolute top-3 right-3 text-2xl font-bold ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-700 hover:text-gray-900'}`}>&times;</button>
+                        <h3 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Add Student With Cost Travel Order</h3>
+                        <form onSubmit={handleSubmit}>
+                            <div className="mb-4">
+                                <label htmlFor="to-id" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>ID</label>
+                                <input type="text" id="to-id" className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`} value={id} onChange={(e) => setId(e.target.value)} required />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="to-name" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Name</label>
+                                <input type="text" id="to-name" className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`} value={name} onChange={(e) => setName(e.target.value)} required />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="to-program" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Program</label>
+                                <input type="text" id="to-program" className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`} value={program} onChange={(e) => setProgram(e.target.value)} required />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="to-destination" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Destination</label>
+                                <input type="text" id="to-destination" className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`} value={destination} onChange={(e) => setDestination(e.target.value)} required />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="to-purpose" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Purpose</label>
+                                <input type="text" id="to-purpose" className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`} value={purpose} onChange={(e) => setPurpose(e.target.value)} required />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="to-amount" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Approved Amount</label>
+                                <input type="text" id="to-amount" className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`} value={approvedAmount} onChange={(e) => setApprovedAmount(e.target.value)} required />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="to-status" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Status</label>
+                                <select id="to-status" className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`} value={status} onChange={(e) => setStatus(e.target.value)} required>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Approved">Approved</option>
+                                    <option value="Rejected">Rejected</option>
+                                    <option value="Completed">Completed</option>
+                                </select>
+                            </div>
+                            <div className="flex justify-end space-x-2">
+                                <button type="button" onClick={onClose} className={`px-4 py-2 rounded-md font-semibold ${darkMode ? 'bg-gray-600 hover:bg-gray-700 text-white' : 'bg-gray-300 hover:bg-gray-400 text-gray-800'}`}>Cancel</button>
+                                <button type="submit" className={`px-4 py-2 rounded-md font-semibold ${darkMode ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}>Add Record</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            );
+        }
+
+        // Add Student No Cost Travel Order Modal
+        function AddStudentNoCostTOModal({ show, onClose, darkMode, onAddRecord }) {
+            const [id, setId] = React.useState('');
+            const [name, setName] = React.useState('');
+            const [program, setProgram] = React.useState('');
+            const [destination, setDestination] = React.useState('');
+            const [purpose, setPurpose] = React.useState('');
+            const [status, setStatus] = React.useState('Pending');
+
+            if (!show) return null;
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                onAddRecord({ id, name, program, destination, purpose, status });
+                onClose();
+            };
+
+            return (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+                    <div className={`rounded-lg shadow-xl w-11/12 md:w-1/2 lg:w-1/3 p-6 relative ${darkMode ? 'bg-gray-800 text-gray-200' : 'bg-white text-gray-800'}`}>
+                        <button onClick={onClose} className={`absolute top-3 right-3 text-2xl font-bold ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-700 hover:text-gray-900'}`}>&times;</button>
+                        <h3 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Add Student No Cost Travel Order</h3>
+                        <form onSubmit={handleSubmit}>
+                            <div className="mb-4">
+                                <label htmlFor="to-id" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>ID</label>
+                                <input type="text" id="to-id" className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`} value={id} onChange={(e) => setId(e.target.value)} required />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="to-name" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Name</label>
+                                <input type="text" id="to-name" className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`} value={name} onChange={(e) => setName(e.target.value)} required />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="to-program" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Program</label>
+                                <input type="text" id="to-program" className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`} value={program} onChange={(e) => setProgram(e.target.value)} required />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="to-destination" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Destination</label>
+                                <input type="text" id="to-destination" className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`} value={destination} onChange={(e) => setDestination(e.target.value)} required />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="to-purpose" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Purpose</label>
+                                <input type="text" id="to-purpose" className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`} value={purpose} onChange={(e) => setPurpose(e.target.value)} required />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="to-status" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Status</label>
+                                <select id="to-status" className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`} value={status} onChange={(e) => setStatus(e.target.value)} required>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Approved">Approved</option>
+                                    <option value="Rejected">Rejected</option>
+                                    <option value="Completed">Completed</option>
+                                </select>
+                            </div>
+                            <div className="flex justify-end space-x-2">
+                                <button type="button" onClick={onClose} className={`px-4 py-2 rounded-md font-semibold ${darkMode ? 'bg-gray-600 hover:bg-gray-700 text-white' : 'bg-gray-300 hover:bg-gray-400 text-gray-800'}`}>Cancel</button>
+                                <button type="submit" className={`px-4 py-2 rounded-md font-semibold ${darkMode ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}>Add Record</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            );
+        }
+
+        // StudentTravelOrdersSection Component (For listing student travel orders with tabs)
+        function StudentTravelOrdersSection({ darkMode, onBack }) {
+            const [activeTab, setActiveTab] = React.useState('with-cost');
+            const [showAddWithCostModal, setShowAddWithCostModal] = React.useState(false);
+            const [showAddNoCostModal, setShowAddNoCostModal] = React.useState(false);
+
+            const [sortOptionWithCost, setSortOptionWithCost] = React.useState('name-asc');
+            const [sortOptionNoCost, setSortOptionNoCost] = React.useState('name-asc');
+
+            const [searchTermWithCost, setSearchTermWithCost] = React.useState('');
+            const [searchTermNoCost, setSearchTermNoCost] = React.useState('');
+
+            const [withCostStudents, setWithCostStudents] = React.useState([
+                { id: 'STC001', name: 'Alice Smith', program: 'BSIT', destination: 'South Korea', purpose: 'Exchange Program', approvedAmount: '$2,500', status: 'Approved' },
+                { id: 'STC002', name: 'Bob Johnson', program: 'BSECE', destination: 'Japan', purpose: 'Research Internship', approvedAmount: '$3,000', status: 'Pending' },
+                { id: 'STC003', name: 'Charlie Brown', program: 'BSCS', destination: 'Singapore', purpose: 'Summer School', approvedAmount: '$1,800', status: 'Approved' },
+            ]);
+
+            const [noCostStudents, setNoCostStudents] = React.useState([
+                { id: 'SNC001', name: 'Diana Prince', program: 'BSIT', destination: 'Thailand', purpose: 'Student Conference', status: 'Approved' },
+                { id: 'SNC002', name: 'Clark Kent', program: 'BSCS', destination: 'Australia', purpose: 'Volunteer Work', status: 'Pending' },
+            ]);
+
+            const handleAddWithCostRecord = (newRecord) => {
+                setWithCostStudents(prev => [...prev, newRecord]);
+                setShowAddWithCostModal(false);
+            };
+
+            const handleAddNoCostRecord = (newRecord) => {
+                setNoCostStudents(prev => [...prev, newRecord]);
+                setShowAddNoCostModal(false);
+            };
+
+            const filteredAndSortedWithCostStudents = React.useMemo(() => {
+                let sortableStudents = [...withCostStudents];
+                const lowerCaseSearchTerm = searchTermWithCost.toLowerCase();
+
+                if (searchTermWithCost) {
+                    sortableStudents = sortableStudents.filter(student =>
+                        Object.values(student).some(value =>
+                            String(value).toLowerCase().includes(lowerCaseSearchTerm)
+                        )
+                    );
+                }
+
+                if (sortOptionWithCost === 'name-asc') {
+                    sortableStudents.sort((a, b) => a.name.localeCompare(b.name));
+                } else if (sortOptionWithCost === 'name-desc') {
+                    sortableStudents.sort((a, b) => b.name.localeCompare(a.name));
+                } else if (sortOptionWithCost === 'status-asc') {
+                    sortableStudents.sort((a, b) => a.status.localeCompare(b.status));
+                } else if (sortOptionWithCost === 'status-desc') {
+                    sortableStudents.sort((a, b) => b.status.localeCompare(a.status));
+                }
+                return sortableStudents;
+            }, [withCostStudents, sortOptionWithCost, searchTermWithCost]);
+
+            const filteredAndSortedNoCostStudents = React.useMemo(() => {
+                let sortableStudents = [...noCostStudents];
+                const lowerCaseSearchTerm = searchTermNoCost.toLowerCase();
+
+                if (searchTermNoCost) {
+                    sortableStudents = sortableStudents.filter(student =>
+                        Object.values(student).some(value =>
+                            String(value).toLowerCase().includes(lowerCaseSearchTerm)
+                        )
+                    );
+                }
+
+                if (sortOptionNoCost === 'name-asc') {
+                    sortableStudents.sort((a, b) => a.name.localeCompare(b.name));
+                } else if (sortOptionNoCost === 'name-desc') {
+                    sortableStudents.sort((a, b) => b.name.localeCompare(a.name));
+                } else if (sortOptionNoCost === 'status-asc') {
+                    sortableStudents.sort((a, b) => a.status.localeCompare(b.status));
+                } else if (sortOptionNoCost === 'status-desc') {
+                    sortableStudents.sort((a, b) => b.status.localeCompare(a.status));
+                }
+                return sortableStudents;
+            }, [noCostStudents, sortOptionNoCost, searchTermNoCost]);
+
+
+            const currentStudents = activeTab === 'with-cost' ? filteredAndSortedWithCostStudents : filteredAndSortedNoCostStudents;
+            const tableHeaders = activeTab === 'with-cost'
+                ? ['ID', 'Name', 'Program', 'Destination', 'Purpose', 'Approved Amount', 'Status', 'Actions']
+                : ['ID', 'Name', 'Program', 'Destination', 'Purpose', 'Status', 'Actions'];
+
+            const handleEdit = (id) => console.log(`Edit student TO: ${id}`);
+            const handleDelete = (id, isWithCost) => {
+                const isConfirmed = prompt(`Are you sure you want to delete this travel order? Type 'yes' to confirm.`);
+                if (isConfirmed && isConfirmed.toLowerCase() === 'yes') {
+                    if (isWithCost) {
+                        setWithCostStudents(prev => prev.filter(s => s.id !== id));
+                    } else {
+                        setNoCostStudents(prev => prev.filter(s => s.id !== id));
+                    }
+                }
+            };
+
+            return (
+                <div className="p-6">
+                    <button
+                        onClick={onBack}
+                        className={`mb-4 px-4 py-2 rounded-md font-semibold text-sm
+                            ${darkMode ? 'bg-gray-600 hover:bg-gray-700 text-white' : 'bg-gray-300 hover:bg-gray-400 text-gray-800'}
+                        `}
+                    >
+                        <i className="fas fa-arrow-left mr-2"></i> Back to Student Records
+                    </button>
+                    <h2 className={`text-3xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Student Travel Orders</h2>
+
+                    <div className="flex border-b border-gray-200 dark:border-gray-600 mb-4">
+                        <button
+                            className={`flex-1 py-2 px-4 text-center font-medium rounded-t-lg
+                                ${activeTab === 'with-cost' ? (darkMode ? 'text-blue-400 border-b-2 border-blue-400 bg-gray-700' : 'text-blue-600 border-b-2 border-blue-600 bg-white') : (darkMode ? 'text-gray-400 hover:text-blue-300' : 'text-gray-500 hover:text-blue-500')}
+                            `}
+                            onClick={() => setActiveTab('with-cost')}
+                        >
+                            With Cost
+                        </button>
+                        <button
+                            className={`flex-1 py-2 px-4 text-center font-medium rounded-t-lg
+                                ${activeTab === 'no-cost' ? (darkMode ? 'text-blue-400 border-b-2 border-blue-400 bg-gray-700' : 'text-blue-600 border-b-2 border-blue-600 bg-white') : (darkMode ? 'text-gray-400 hover:text-blue-300' : 'text-gray-500 hover:text-blue-500')}
+                            `}
+                            onClick={() => setActiveTab('no-cost')}
+                        >
+                            No Cost
+                        </button>
+                    </div>
+
+                    <div className={`mt-4 p-6 rounded-lg shadow-md overflow-x-auto max-w-full mx-auto ${darkMode ? 'bg-gray-700 text-gray-200' : 'bg-white text-gray-700'}`}>
+                        <div className="flex flex-col md:flex-row justify-between items-center mb-4 space-y-4 md:space-y-0 md:space-x-4">
+                            <h3 className="text-xl font-semibold mb-2 md:mb-0">
+                                {activeTab === 'with-cost' ? 'With Cost' : 'No Cost'} Records
+                            </h3>
+                            <div className="flex items-center space-x-4 w-full md:w-auto">
+                                <div className="relative flex-grow">
+                                    <input
+                                        type="text"
+                                        placeholder={`Search ${activeTab === 'with-cost' ? 'with cost' : 'no cost'} students...`}
+                                        className={`
+                                            w-full p-2 pl-4 rounded-full border
+                                            ${darkMode
+                                                ? 'bg-gray-800 text-gray-200 border-gray-600 focus:border-blue-500 focus:ring-blue-500'
+                                                : 'bg-white text-gray-700 border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                                            }
+                                            focus:outline-none focus:ring-1
+                                        `}
+                                        value={activeTab === 'with-cost' ? searchTermWithCost : searchTermNoCost}
+                                        onChange={(e) => activeTab === 'with-cost' ? setSearchTermWithCost(e.target.value) : setSearchTermNoCost(e.target.value)}
+                                    />
+                                    <i className="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                </div>
+
+                                <label htmlFor={`sort-student-${activeTab}`} className={`text-sm font-medium whitespace-nowrap ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Sort By:</label>
+                                <select
+                                    id={`sort-student-${activeTab}`}
+                                    className={`p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-300'}`}
+                                    value={activeTab === 'with-cost' ? sortOptionWithCost : sortOptionNoCost}
+                                    onChange={(e) => activeTab === 'with-cost' ? setSortOptionWithCost(e.target.value) : setSortOptionNoCost(e.target.value)}
+                                >
+                                    <option value="name-asc">Name (A-Z)</option>
+                                    <option value="name-desc">Name (Z-A)</option>
+                                    <option value="status-asc">Status (A-Z)</option>
+                                    <option value="status-desc">Status (Z-A)</option>
+                                </select>
+
+                                <button
+                                    onClick={() => activeTab === 'with-cost' ? setShowAddWithCostModal(true) : setShowAddNoCostModal(true)}
+                                    className={`px-4 py-2 rounded-md font-semibold text-sm
+                                        ${darkMode ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'}
+                                    `}
+                                >
+                                    <i className="fas fa-plus mr-1"></i> Add Record
+                                </button>
+                            </div>
+                        </div>
+                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+                            <thead className={`${darkMode ? 'bg-gray-600' : 'bg-gray-50'}`}>
+                                <tr>
+                                    {tableHeaders.map(header => (
+                                        <th key={header} scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{header}</th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
+                                {currentStudents.length > 0 ? (
+                                    currentStudents.map(student => (
+                                        <tr key={student.id}>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-center">{student.id}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">{student.name}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">{student.program}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">{student.destination}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">{student.purpose}</td>
+                                            {activeTab === 'with-cost' && (
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-center">{student.approvedAmount}</td>
+                                            )}
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">{student.status}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-center">
+                                                <div className="flex space-x-2 justify-center">
+                                                    <button
+                                                        onClick={() => handleEdit(student.id)}
+                                                        className={`p-2 rounded-full ${darkMode ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
+                                                        title="Edit"
+                                                    >
+                                                        <i className="fas fa-edit"></i>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(student.id, activeTab === 'with-cost')}
+                                                        className={`p-2 rounded-full ${darkMode ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-red-500 hover:bg-red-600 text-white'}`}
+                                                        title="Delete"
+                                                    >
+                                                        <i className="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={tableHeaders.length} className="px-6 py-4 text-center text-sm text-gray-500">
+                                            No {activeTab === 'with-cost' ? 'with-cost' : 'no-cost'} student travel orders found.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Modals for adding records */}
+                    <AddStudentWithCostTOModal show={showAddWithCostModal} onClose={() => setShowAddWithCostModal(false)} darkMode={darkMode} onAddRecord={handleAddWithCostRecord} />
+                    <AddStudentNoCostTOModal show={showAddNoCostModal} onClose={() => setShowAddNoCostModal(false)} darkMode={darkMode} onAddRecord={handleAddNoCostRecord} />
+                </div>
+            );
+        }
+
+        // StudentApp - Main component for student.html
+        function StudentApp() {
+            const [loggedInUser, setLoggedInUser] = React.useState(() => localStorage.getItem('loggedInUser'));
+            const [darkMode, setDarkMode] = React.useState(() => {
+                try {
+                    const savedMode = localStorage.getItem('darkModePreference');
+                    return savedMode ? JSON.parse(savedMode) : false;
+                } catch (e) {
+                    console.error("Failed to parse dark mode preference from localStorage:", e);
+                    return false;
+                }
+            });
+            const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false); // State for sidebar
+            const [activeStudentView, setActiveStudentView] = React.useState('list'); // 'list' or 'travel-orders'
+            const [showAddStudentModal, setShowAddStudentModal] = React.useState(false);
+            const [showViewDocumentsModal, setShowViewDocumentsModal] = React.useState(false);
+            const [documentsToView, setDocumentsToView] = React.useState([]);
+
+            // Parse URL parameters for initial view or opening modals directly
+            React.useEffect(() => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const viewParam = urlParams.get('view');
+                const addParam = urlParams.get('add');
+
+                if (viewParam === 'travel-orders') {
+                    setActiveStudentView('travel-orders');
+                } else {
+                    setActiveStudentView('list');
+                }
+
+                if (addParam === 'true') {
+                    setShowAddStudentModal(true);
+                }
+            }, []);
+
+            React.useEffect(() => {
+                document.body.classList.toggle('dark-mode', darkMode);
+            }, [darkMode]);
+
+            const toggleDarkMode = () => {
+                setDarkMode(prevMode => {
+                    const newMode = !prevMode;
+                    localStorage.setItem('darkModePreference', JSON.stringify(newMode));
+                    document.body.classList.toggle('dark-mode', newMode);
+                    return newMode;
+                });
+            };
+
+            const toggleSidebar = () => {
+                setIsSidebarCollapsed(prev => !prev);
+            };
+
+            const handleMenuItemClick = (menuItem) => {
+                setActiveStudentView(menuItem);
+            };
+
+            const handleSignOut = () => {
+                localStorage.removeItem('loggedInUser');
+                localStorage.removeItem('darkModePreference');
+                // You might want to clear student-specific local storage here if any
+                if (window.electronAPI && window.electronAPI.navigateToLogin) {
+                    window.electronAPI.navigateToLogin();
+                } else {
+                    window.location.replace('login.html');
+                }
+            };
+
+            React.useEffect(() => {
+                if (!loggedInUser) {
+                    if (window.electronAPI && window.electronAPI.navigateToLogin) {
+                        window.electronAPI.navigateToLogin();
+                    } else {
+                        window.location.replace('login.html');
+                    }
+                }
+            }, [loggedInUser]);
+
+            const handleAddStudentClick = () => {
+                setShowAddStudentModal(true);
+            };
+
+            const handleCloseAddStudentModal = () => {
+                setShowAddStudentModal(false);
+            };
+
+            const handleViewDocumentsClick = (documents) => {
+                setDocumentsToView(documents);
+                setShowViewDocumentsModal(true);
+            };
+
+            const handleCloseViewDocumentsModal = () => {
+                setShowViewDocumentsModal(false);
+                setDocumentsToView([]);
+            };
+
+            const handleNavigateToStudentTravelOrders = () => {
+                setActiveStudentView('travel-orders');
+                window.history.pushState(null, '', '?view=travel-orders'); // Update URL
+            };
+
+            const handleBackToStudentList = () => {
+                setActiveStudentView('list');
+                window.history.pushState(null, '', 'student.html'); // Update URL
+            };
+
+            if (!loggedInUser) {
+                return null;
+            }
+
+            return (
+                <React.Fragment>
+                    <div className={`h-screen w-screen flex ${darkMode ? 'dark-mode-student' : 'light-mode-student'} dashboard-background`}>
+                        {/* Sidebar */}
+                        <Sidebar
+                            darkMode={darkMode}
+                            isCollapsed={isSidebarCollapsed}
+                            toggleSidebar={toggleSidebar}
+                            activeMenuItem={activeStudentView}
+                            onMenuItemClick={handleMenuItemClick}
+                        />
+
+                        {/* Main content area, including header and dynamic views */}
+                        {/* Added main-content class and conditional sidebar-expanded/collapsed class */}
+                        <div className={`flex-1 flex flex-col main-content relative ${darkMode ? 'dark-mode-main-content' : ''} ${isSidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}`}>
+                            {/* Header for the main content area */}
+                            <Header darkMode={darkMode} toggleDarkMode={toggleDarkMode} handleSignOut={handleSignOut} />
+
+                            {/* Actual main content (StudentView or StudentTravelOrdersSection) */}
+                            <main className="flex-1 p-6 overflow-y-auto">
+                                {activeStudentView === 'list' && (
+                                    <StudentView
+                                        darkMode={darkMode}
+                                        onAddStudentClick={handleAddStudentClick}
+                                        onViewDocumentsClick={handleViewDocumentsClick}
+                                        onNavigateToStudentTravelOrders={handleNavigateToStudentTravelOrders}
+                                    />
+                                )}
+                                {activeStudentView === 'travel-orders' && (
+                                    <StudentTravelOrdersSection
+                                        darkMode={darkMode}
+                                        onBack={handleBackToStudentList}
+                                    />
+                                )}
+                            </main>
+                        </div>
+
+                        {/* Modals always at the root of the app */}
+                        <AddStudentModal show={showAddStudentModal} onClose={handleCloseAddStudentModal} darkMode={darkMode} />
+                        <ViewDocumentsModal
+                            show={showViewDocumentsModal}
+                            onClose={handleCloseViewDocumentsModal}
+                            darkMode={darkMode}
+                            documents={documentsToView}
+                        />
+                    </div>
+                </React.Fragment>
+            );
+        }
+
+        ReactDOM.render(<StudentApp />, document.getElementById('student-root'));
+    </script>
+</body>
+</html>

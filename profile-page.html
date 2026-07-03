@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRO Monitoring System - My Profile</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Urbanist -->
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome CDN for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Link to dashboard-specific stylesheet for consistent styling -->
+    <link rel="stylesheet" href="logbook.css">
+</head>
+<body>
+    <div id="root"></div>
+
+    <!-- React and ReactDOM CDNs -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="text/babel">
+        // MyProfilePage Component
+        function MyProfilePage({ darkMode, toggleDarkMode }) {
+            // Since there's only one section (Profile Details), activeTab state is no longer strictly needed for tabs
+            // but can be kept if future expansion is planned. For now, it will implicitly be 'profileDetails'.
+            const [profileImage, setProfileImage] = React.useState('https://placehold.co/150x150/cccccc/ffffff?text=User'); // Default placeholder image
+
+            // Function to navigate back to the dashboard
+            const handleBackToDashboard = () => {
+                if (window.electronAPI && window.electronAPI.navigateToDashboard) {
+                    window.electronAPI.navigateToDashboard();
+                } else {
+                    window.location.replace('dashboard.html');
+                }
+            };
+
+            // Handle image upload (client-side only for this example)
+            const handleImageUpload = (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        setProfileImage(e.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            return (
+                <div className={`flex flex-col h-full w-full ${darkMode ? 'dark-mode-dashboard' : 'light-mode-dashboard'}`}>
+                    {/* Main content area for the profile page */}
+                    <main className={`flex-1 p-6 overflow-y-auto main-dashboard-content relative ${darkMode ? 'dark-mode-main-content' : ''}`}>
+                        <div className="flex justify-between items-center mb-8">
+                            {/* Back button */}
+                            <button
+                                onClick={handleBackToDashboard}
+                                className={`mb-4 px-4 py-2 rounded-md font-semibold transition-colors duration-200 ${
+                                    darkMode ? 'bg-gray-600 hover:bg-gray-500 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'
+                                }`}
+                            >
+                                <i className="fas fa-arrow-left mr-2"></i> Back to Dashboard
+                            </button>
+
+                            {/* Dark mode toggle - duplicated for standalone page functionality */}
+                            <button
+                                onClick={toggleDarkMode}
+                                title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                                className={`
+                                    inline-flex justify-center items-center
+                                    h-10 w-10 rounded-full shadow-sm
+                                    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
+                                    ${darkMode
+                                        ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+                                        : 'bg-gray-200 hover:bg-gray-300 text-gray-600'
+                                    }
+                                `}
+                            >
+                                <i className={darkMode ? "fas fa-sun text-lg" : "fas fa-moon text-lg"}></i>
+                            </button>
+                        </div>
+
+                        {/* Profile Content */}
+                        <div className={`p-6 rounded-lg shadow-md ${darkMode ? 'bg-gray-700 text-gray-200' : 'bg-white text-gray-700'}`}>
+                            <h2 className="text-3xl font-bold mb-6">My Profile</h2>
+
+                            {/* Profile Picture Section */}
+                            <div className="flex flex-col items-center mb-6">
+                                <img
+                                    src={profileImage}
+                                    alt="Profile"
+                                    className="w-32 h-32 rounded-full object-cover border-4 border-blue-500 dark:border-blue-400 shadow-lg mb-4"
+                                    onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/150x150/cccccc/ffffff?text=User" }}
+                                />
+                                <input
+                                    type="file"
+                                    id="profile-picture-upload"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={handleImageUpload}
+                                />
+                                <label
+                                    htmlFor="profile-picture-upload"
+                                    className={`cursor-pointer px-4 py-2 rounded-md font-semibold transition-colors duration-200 ${
+                                        darkMode ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'
+                                    }`}
+                                >
+                                    <i className="fas fa-upload mr-2"></i> Upload Picture
+                                </label>
+                            </div>
+
+                            {/* Only Profile Details section remains */}
+                            <div>
+                                <div className="mb-4">
+                                    <label htmlFor="name" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Name</label>
+                                    <input
+                                        type="text"
+                                        id="name"
+                                        className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-800 border-gray-600 text-gray-200' : 'border-gray-300'}`}
+                                        defaultValue="Juan Dela Cruz"
+                                        readOnly
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label htmlFor="role" className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Role</label>
+                                    <input
+                                        type="text"
+                                        id="role"
+                                        className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-800 border-gray-600 text-gray-200' : 'border-gray-300'}`}
+                                        defaultValue="Administrator"
+                                        readOnly
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            );
+        }
+
+        // Root App Component for the profile page
+        function App() {
+            const [darkMode, setDarkMode] = React.useState(() => {
+                try {
+                    const savedMode = localStorage.getItem('darkModePreference');
+                    return savedMode ? JSON.parse(savedMode) : false;
+                } catch (e) {
+                    console.error("Failed to parse dark mode preference from localStorage:", e);
+                    return false;
+                }
+            });
+
+            const toggleDarkMode = () => {
+                setDarkMode(prevMode => {
+                    const newMode = !prevMode;
+                    localStorage.setItem('darkModePreference', JSON.stringify(newMode));
+                    document.body.classList.toggle('dark-mode', newMode);
+                    return newMode;
+                });
+            };
+
+            React.useEffect(() => {
+                document.body.classList.toggle('dark-mode', darkMode);
+            }, [darkMode]);
+
+            // For a standalone profile page, we might assume the user is logged in
+            // or redirect them if not. For now, just render the page.
+            return (
+                <React.Fragment>
+                    <div className={`w-screen h-screen flex justify-center items-center overflow-hidden dashboard-background`}>
+                        <MyProfilePage darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+                    </div>
+                </React.Fragment>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>

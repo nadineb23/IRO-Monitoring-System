@@ -1,0 +1,325 @@
+/* Custom CSS for the IRO Monitoring System - Dashboard Page */
+
+/* Base body styles shared across pages */
+body {
+    font-family: 'Urbanist', sans-serif;
+    -webkit-app-region: drag; /* For Electron drag region */
+    margin: 0;
+    padding: 0;
+    height: 100vh; /* Use height: 100vh for full viewport height */
+    width: 100vw;  /* Use width: 100vw for full viewport width */
+    overflow: hidden; /* Keep overflow hidden on body to prevent outer scrollbars */
+    background-color: #FFFFFF; /* Default white background */
+    color: #333; /* Default text color */
+    transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition for theme changes */
+    display: block; /* Removed display:flex from body for dashboard/student pages to avoid conflicts with root React div */
+}
+
+/* Dark mode for body */
+body.dark-mode {
+    background-color: #1a202c; /* Dark background for the body */
+    color: #e2e8f0; /* Light text color for the body */
+}
+
+/* Ensure interactive elements don't drag the Electron window */
+button, input, a, select, textarea {
+    -webkit-app-region: no-drag;
+}
+
+/* Dashboard/Student page specific root background container */
+.dashboard-background {
+    background-color: #f3f4f6; /* Light gray for dashboard background */
+    width: 100vw;
+    height: 100vh;
+    display: flex; /* This is the main flex container for sidebar and main content */
+    transition: background-color 0.3s ease; /* Smooth transition */
+    flex-direction: row; /* Default for desktop: sidebar and main content side-by-side */
+}
+
+body.dark-mode .dashboard-background {
+    background-color: #1a202c; /* Dark background for dark mode dashboard */
+}
+
+/* Specific background for the main content area in dark mode */
+.main-dashboard-content.dark-mode-main-content {
+    background-color: #2d3748; /* A darker gray for the main content area in dark mode */
+    color: #e2e8f0; /* Light text color */
+}
+
+/* Additional styles for light and dark modes (for DashboardPage/StudentApp's root div) */
+.light-mode-student,
+.light-mode-dashboard {
+    background-color: #f3f4f6; /* Light background for the app container */
+    color: #333; /* Dark text for light mode */
+}
+
+.dark-mode-student,
+.dark-mode-dashboard {
+    background-color: #1a202c; /* Dark background for the app container */
+    color: #e2e8f0; /* Light text for dark mode */
+}
+
+/* Dark mode toggle button styles */
+.dark-mode-toggle {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #6b7280;
+    transition: color 0.3s ease, transform 0.2s ease;
+    z-index: 1000;
+    padding: 0.5rem;
+    border-radius: 9999px;
+}
+
+.dark-mode-toggle:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #333;
+    transform: scale(1.1);
+}
+
+body.dark-mode .dark-mode-toggle {
+    color: #e2e8f0;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .dark-mode-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #a0aec0;
+}
+
+/* Styles for the blue sidebar */
+.sidebar { /* Added .sidebar class for more specific targeting */
+    background-color: #140ca2;
+    color: #ffffff;
+    padding-top: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0; /* Prevent sidebar from shrinking */
+    overflow-y: auto; /* Allow scrolling if content overflows vertically */
+    /* Transitions for width are handled by Tailwind classes w-16 and w-64,
+       but explicitly adding a transition here ensures it */
+    transition: width 0.3s ease-in-out;
+}
+
+/* Define CSS variables for sidebar width */
+:root {
+    --sidebar-width-expanded: 256px; /* Corresponding to Tailwind's w-64 (256px) */
+    --sidebar-width-collapsed: 64px;  /* Corresponding to Tailwind's w-16 (64px) */
+}
+
+/* Main content area adjustment for sidebar expand/collapse */
+.main-content {
+    flex-grow: 1; /* Ensures it takes remaining space */
+    /* Dynamically set margin-left based on sidebar state */
+    margin-left: var(--sidebar-width-expanded); /* Default for expanded sidebar */
+    transition: margin-left 0.3s ease-in-out; /* Smooth transition for margin */
+}
+
+/* When the sidebar is collapsed, adjust main content margin */
+.main-content.sidebar-collapsed {
+    margin-left: var(--sidebar-width-collapsed);
+}
+
+/* Search bar container adjustment (to remove the fixed ml-96) */
+.search-bar-container {
+    margin-left: 0 !important; /* Reset any fixed margin */
+    /* The search bar itself should be w-full max-w-lg and centered by parent flex if needed */
+}
+
+
+/* --- General Interactive Element Enhancements for Smoothness --- */
+
+/* Apply smooth transitions to all interactive elements */
+button,
+a,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="datetime-local"],
+input[type="file"],
+select,
+textarea,
+.cursor-pointer, /* For elements that have cursor-pointer Tailwind class */
+.shadow-md.cursor-pointer /* For cards that are clickable */
+{
+    transition: all 0.3s ease-in-out; /* Universal transition for common properties */
+    cursor: pointer; /* Indicate clickability */
+}
+
+/* Specific hover effects for common button styles */
+.px-4.py-2.rounded-md.font-semibold:hover,
+.p-2.rounded-full:hover {
+    transform: translateY(-2px); /* Slight lift effect on hover */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25); /* Enhanced shadow on hover */
+}
+
+/* Active/Clicked state feedback for buttons */
+.px-4.py-2.rounded-md.font-semibold:active,
+.p-2.rounded-full:active {
+    transform: translateY(0); /* Return to original position */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Reduce shadow */
+}
+
+/* Focus styles for input fields and select dropdowns */
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none; /* Remove default outline */
+    border-color: #4f46e5; /* A primary blue for focus border */
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3); /* Custom focus ring */
+}
+
+/* Dark mode specific focus styles */
+body.dark-mode input:focus,
+body.dark-mode select:focus,
+body.dark-mode textarea:focus {
+    border-color: #818cf8; /* Lighter blue for dark mode focus border */
+    box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.3); /* Lighter focus ring for dark mode */
+}
+
+/* Ensure clickable elements always have a pointer cursor */
+.clickable-element { /* Generic class for elements you want to explicitly make clickable */
+    cursor: pointer;
+}
+
+/* --- Modal Smoothness Enhancements --- */
+
+/* Base for the modal backdrop (the dark overlay) */
+.fixed.inset-0.bg-opacity-50 {
+    transition: opacity 0.3s ease-in-out; /* Smooth fade for the backdrop */
+}
+
+/* Base for the modal content panel */
+.rounded-lg.shadow-xl.relative {
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out; /* Smooth fade and slide for the modal content */
+    transform: translateY(0); /* Ensure transform property is present for transitions */
+}
+
+
+/* --- Media Queries for Fluidity --- */
+
+/* Tablets and Smaller Laptops (e.g., 769px to 1024px) */
+@media (max-width: 1024px) {
+    /* Main content padding adjustment for smaller screens */
+    .main-content.sidebar-expanded {
+        margin-left: var(--sidebar-width-expanded); /* Maintain margin for expanded sidebar */
+    }
+    .main-content.sidebar-collapsed {
+        margin-left: var(--sidebar-width-collapsed); /* Maintain margin for collapsed sidebar */
+    }
+}
+
+/* Smaller Tablets and Large Phones (e.g., 481px to 768px) */
+@media (max-width: 768px) {
+    /* Change main layout to column stacking for better mobile experience */
+    .dashboard-background {
+        flex-direction: column;
+        height: auto; /* Allow height to adjust based on content */
+        min-height: 100vh; /* Ensure it still covers full viewport if content is small */
+    }
+
+    .sidebar { /* Sidebar becomes full width on small screens */
+        width: 100% !important; /* Override Tailwind's w-16/w-64 on small screens */
+        position: relative; /* Not fixed anymore, flows with content */
+        top: auto;
+        left: auto;
+        height: auto; /* Auto height for content */
+        max-height: 50vh; /* Limit height if it gets too big when expanded */
+        overflow-y: auto; /* Allow scrolling within the sidebar on small screens */
+    }
+
+    .sidebar .flex.items-center.justify-between {
+        /* Ensure sidebar header content is laid out correctly on small screens */
+        flex-direction: row; /* Keep elements in a row */
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .sidebar nav {
+        display: flex; /* Make navigation items horizontal for collapsed view on small screens */
+        flex-wrap: wrap; /* Allow items to wrap */
+        justify-content: space-around; /* Distribute items evenly */
+        gap: 10px; /* Space between items */
+    }
+
+    .sidebar nav a { /* Target nav links directly */
+        padding: 8px 10px; /* Smaller padding */
+        font-size: 0.9rem; /* Smaller font */
+        border-radius: 8px; /* Adjust border radius */
+        flex-direction: column; /* Stack icon and text vertically within link */
+        align-items: center; /* Center content */
+        text-align: center;
+        width: auto; /* Allow width to be determined by content */
+        flex-grow: 1; /* Allow links to grow to fill space */
+    }
+
+    .sidebar nav a i {
+        margin-right: 0; /* Remove horizontal margin */
+        margin-bottom: 5px; /* Add vertical margin below icon */
+        font-size: 1.1rem; /* Adjust icon size */
+    }
+
+    /* Hide the text when sidebar is explicitly collapsed AND on small screens */
+    /* This rule targets spans inside links when the `aside` element itself has `w-16` (collapsed) */
+    .sidebar.w-16 span {
+        display: none;
+    }
+
+    /* When the sidebar is NOT collapsed (w-64) on small screens, show the text */
+    .sidebar.w-64 span {
+        display: block; /* Ensure text is visible when expanded on small screens */
+    }
+
+    .main-content {
+        padding: 1rem; /* Reduce main content padding */
+        margin-left: 0 !important; /* On small screens, remove left margin from main content */
+    }
+
+    .main-header .search-bar-container {
+        margin-left: 0 !important; /* Override any lingering fixed margin */
+        flex-grow: 1; /* Allow search bar to grow */
+        width: 100%; /* Ensure it takes full width of its parent */
+    }
+
+    .main-header .flex.justify-between.items-center {
+        flex-direction: column; /* Stack search bar and profile/toggle vertically */
+        align-items: center; /* Center them */
+    }
+
+    .main-header .flex.items-center.z-50.ml-4 {
+        margin-left: 0; /* Remove fixed left margin */
+        width: 100%; /* Occupy full width */
+        justify-content: center; /* Center dark mode toggle and profile */
+        margin-top: 1rem; /* Add some space from search bar */
+    }
+
+    .grid-cols-1.md\:grid-cols-2.lg\:grid-cols-3 {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Adjust grid for smaller screens */
+        gap: 1rem; /* Reduce gap */
+        margin-top: 1rem; /* Adjust margin */
+    }
+}
+.folder-icon-color {
+    color: #ff7518;
+}
+/* Hide these columns by default for the expanded sidebar state */
+.hide-on-expanded-sidebar {
+    display: none !important; /* Use !important to ensure override */
+}
+
+/* When the main content area has 'sidebar-collapsed', show these columns */
+/* Adjust the display type (table-cell) according to the HTML element (th/td) */
+.main-content.sidebar-collapsed .hide-on-expanded-sidebar {
+    display: table-cell !important;
+}
+
+/* Ensure the table itself can shrink/grow as columns are hidden/shown */
+.min-w-full {
+    width: 100%; /* Make sure table uses available width */
+}
+.modal {
+            z-index: 1000; /* Ensures the modal is on top of other content */
+        }
+.hidden {
+        display: none; /* Hides the modal by default */
+        }        
